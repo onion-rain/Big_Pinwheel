@@ -31,5 +31,15 @@ softmotor Pinwheel(1, 0x207, &DJI_Motor_3508, &Pinwheel_Spe_Pid, &Pinwheel_Dir_P
 void MOTOR_Init_All(void)
 {
 	manager::CANSelect(&hcan1,NULL);//选can
-	Pinwheel.Enable_Block(4000, 200, 2);//大符电机启用堵转检测
+//	Pinwheel.Enable_Block(4000, 200, 2);//大符电机启用堵转检测
+	ARM1_PULSE = LOGIC_ONE_PULSE;
+	ARM2_PULSE = LOGIC_ZERO_PULSE;
+	ARM3_PULSE = LOGIC_ONE_PULSE;
+	ARM4_PULSE = LOGIC_ONE_PULSE;
+	ARM5_PULSE = LOGIC_ONE_PULSE;
+	HAL_TIM_PWM_Start(ARM1_TIM,ARM1_CHANNEL);
+	HAL_TIM_PWM_Start(ARM2_TIM,ARM2_CHANNEL);
+	HAL_TIM_PWM_Start(ARM3_TIM,ARM3_CHANNEL);
+	HAL_TIM_PWM_Start(ARM4_TIM,ARM4_CHANNEL);
+	HAL_TIM_PWM_Start(ARM5_TIM,ARM5_CHANNEL);//初始化为所有rgb全亮
 }

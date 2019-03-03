@@ -55,7 +55,7 @@
 #include "cmsis_os.h"
 
 /* Private includes ----------------------------------------------------------*/
-/* USER CODE BEGIN Includes */    
+/* USER CODE BEGIN Includes */     
 #include "Dbus_Uart.h" 
 #include "Can_Driver.hpp"
 #include "My_Car.hpp"
@@ -103,7 +103,7 @@ void MX_FREERTOS_Init(void); /* (MISRA C 2004 rule 8.1) */
 void MX_FREERTOS_Init(void) {
   /* USER CODE BEGIN Init */
   Dbus_Uart_Init();                 //DBUS DMA初始化
-  CAN_Init_All();                   //CAN1、2初始化
+//  CAN_Init_All();                   //CAN1、2初始化
 	MOTOR_Init_All();                 //电机选can,摩擦轮初始化
   /* USER CODE END Init */
 
@@ -121,8 +121,8 @@ void MX_FREERTOS_Init(void) {
 
   /* Create the thread(s) */
   /* definition and creation of defaultTask */
-//  osThreadDef(defaultTask, StartDefaultTask, osPriorityNormal, 0, 128);
-//  defaultTaskHandle = osThreadCreate(osThread(defaultTask), NULL);
+  osThreadDef(defaultTask, StartDefaultTask, osPriorityNormal, 0, 128);
+  defaultTaskHandle = osThreadCreate(osThread(defaultTask), NULL);
 
   /* USER CODE BEGIN RTOS_THREADS */
   /* add threads, ... */

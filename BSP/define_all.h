@@ -2,21 +2,17 @@
   * @brief   宏定义汇总
   * @details 
   * @author  Onion rain
-  * @date    2018.11.15
+  * @date    2019.3.3
   * @version  
   * @par     Copyright (c):  Onion rain
   * @par     V1.0
-  */  
+*/  
 
 #ifndef __DEFINE_ALL_H
 #define __DEFINE_ALL_H
 
 //#include "FreeRTOSConfig.h"
 /*
-	* 云台电机yaw：can1 0x205
-	* 云台电机pitch：can1 0x206
-	* 拨弹电机：can1 0x207
-	* 摩擦轮电机(3510)：can2 0x201;0x202
 	* Middlewares/FreeRTOS group改为--c99
 	* 注释掉freertos.c中的defaultTask
 	* freertos生成后配置FreeRTOSConfig.h 122行：#define INCLUDE_vTaskDelayUntil 1
@@ -38,20 +34,31 @@
 
 /**********************便于移植**********************/
 /** 
-  * @brief 摩擦轮时钟通道定义
+  * @brief pwm定时器通道定义
   * @refer My_Car.cpp
 */
-#define FRICTION_L_TIM &htim3
-#define FRICTION_L_CHANNEL TIM_CHANNEL_3
-#define FRICTION_L_SPEED_SET TIM3->CCR3
-#define FRICTION_R_TIM &htim3
-#define FRICTION_R_CHANNEL TIM_CHANNEL_4
-#define FRICTION_R_SPEED_SET TIM3->CCR4
-#define FRICTION_PWM_MAX 2000    //摩擦轮PWM最大值
-#define FRICTION_PWM_MIN 1000    //摩擦轮PWM最小值
-#define FRICTION_PWM_SAFE 1000   //摩擦轮安全模式PWM输出值
-#define FRICTION_SPE_MAX 4000    //摩擦轮速度最大值(rpm)
-#define FRICTION_SPE_MIN 0       //摩擦轮速度最小值(rpm)
+#define ARM1_TIM &htim2
+#define ARM1_CHANNEL TIM_CHANNEL_1
+#define ARM1_PULSE TIM2->CCR1
+
+#define ARM2_TIM &htim2
+#define ARM2_CHANNEL TIM_CHANNEL_2
+#define ARM2_PULSE TIM2->CCR2
+
+#define ARM3_TIM &htim2
+#define ARM3_CHANNEL TIM_CHANNEL_3
+#define ARM3_PULSE TIM2->CCR3
+
+#define ARM4_TIM &htim2
+#define ARM4_CHANNEL TIM_CHANNEL_4
+#define ARM4_PULSE TIM3->CCR4
+
+#define ARM5_TIM &htim3
+#define ARM5_CHANNEL TIM_CHANNEL_1
+#define ARM5_PULSE TIM3->CCR1
+
+#define LOGIC_ONE_PULSE (34-1)
+#define LOGIC_ZERO_PULSE (13-1)
 /** 
   * @brief DBUS 串口定义
   * @refer Dbus_Uart.h
