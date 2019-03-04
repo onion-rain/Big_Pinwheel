@@ -57,7 +57,7 @@
 #include "gpio.h"
 
 /* USER CODE BEGIN Includes */
-
+#include "define_all.h"
 /* USER CODE END Includes */
 
 /* Private variables ---------------------------------------------------------*/
@@ -111,11 +111,9 @@ int main(void)
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
   MX_DMA_Init();
-//	MX_CAN1_Init();
-  MX_TIM1_Init();
+//  MX_CAN1_Init();
   MX_TIM2_Init();
   MX_TIM3_Init();
-  MX_TIM4_Init();
   MX_USART1_UART_Init();
   /* USER CODE BEGIN 2 */
 
@@ -221,12 +219,19 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
   if (htim->Instance == TIM14) {
     HAL_IncTick();
   }
-	else if(htim == &htim1)
-		tim1_tmp++;
-	else if(htim == &htim2)
-		tim2_tmp++;
   /* USER CODE BEGIN Callback 1 */
-
+	else if(htim->Instance == TIM2)//ARM1-4
+	{
+		if(ARM1_PULSE == LOGIC_ONE_PULSE)
+			ARM1_PULSE = LOGIC_ZERO_PULSE;
+		else ARM1_PULSE = LOGIC_ONE_PULSE;
+			
+	}else if(htim->Instance == TIM3)//ARM5
+	{
+		if(ARM5_PULSE == LOGIC_ONE_PULSE)
+			ARM5_PULSE = LOGIC_ZERO_PULSE;
+		else ARM5_PULSE = LOGIC_ONE_PULSE;
+	}
   /* USER CODE END Callback 1 */
 }
 
