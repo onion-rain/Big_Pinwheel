@@ -55,7 +55,7 @@ void UsageFault_Handler(void);
 void DebugMon_Handler(void);
 void SysTick_Handler(void);
 void CAN1_RX0_IRQHandler(void);
-void TIM1_TRG_COM_TIM11_IRQHandler(void);
+void TIM1_UP_TIM10_IRQHandler(void);
 void TIM4_IRQHandler(void);
 void USART1_IRQHandler(void);
 void TIM8_TRG_COM_TIM14_IRQHandler(void);
