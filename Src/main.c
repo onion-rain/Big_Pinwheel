@@ -58,6 +58,7 @@
 
 /* USER CODE BEGIN Includes */
 #include "define_all.h"
+#include "My_SMDLED.h"
 /* USER CODE END Includes */
 
 /* Private variables ---------------------------------------------------------*/
@@ -222,11 +223,9 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
   /* USER CODE BEGIN Callback 1 */
 	else if(htim->Instance == TIM2)//ARM1-4
 	{
-		if(ARM1_PULSE == LOGIC_ONE_PULSE)
-			ARM1_PULSE = LOGIC_ZERO_PULSE;
-		else ARM1_PULSE = LOGIC_ONE_PULSE;
-			
-	}else if(htim->Instance == TIM3)//ARM5
+		SMD_LED_Init();
+	}
+	else if(htim->Instance == TIM3)//ARM5
 	{
 		if(ARM5_PULSE == LOGIC_ONE_PULSE)
 			ARM5_PULSE = LOGIC_ZERO_PULSE;

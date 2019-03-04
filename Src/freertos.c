@@ -61,6 +61,7 @@
 #include "My_Car.hpp"
 #include "music.h"
 #include "define_all.h"
+#include "My_SMDLED.h"
 
 #include "Main_Task.h"
 #include "Other_Tasks.h"
@@ -110,6 +111,7 @@ void MX_FREERTOS_Init(void) {
 	MOTOR_Init_All();                 //电机选can,摩擦轮初始化
 	Music_Play(INTEL);                //初始化完成声
 	BLUE_ON;
+	SMD_LED_Color_Set(RED);
   /* USER CODE END Init */
 
   /* USER CODE BEGIN RTOS_MUTEX */
