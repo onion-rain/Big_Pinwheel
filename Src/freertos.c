@@ -59,6 +59,8 @@
 #include "Dbus_Uart.h" 
 #include "Can_Driver.hpp"
 #include "My_Car.hpp"
+#include "music.h"
+#include "define_all.h"
 
 #include "Main_Task.h"
 #include "Other_Tasks.h"
@@ -82,6 +84,7 @@
 /* Private variables ---------------------------------------------------------*/
 /* USER CODE BEGIN Variables */
 osThreadId MainTaskHandle;
+osThreadId MusicTaskHandle;
 osThreadId TestTaskHandle;
 /* USER CODE END Variables */
 osThreadId defaultTaskHandle;
@@ -105,6 +108,8 @@ void MX_FREERTOS_Init(void) {
   Dbus_Uart_Init();                 //DBUS DMA初始化
 //  CAN_Init_All();                   //CAN1、2初始化
 	MOTOR_Init_All();                 //电机选can,摩擦轮初始化
+	Music_Play(INTEL);                //初始化完成声
+	BLUE_ON;
   /* USER CODE END Init */
 
   /* USER CODE BEGIN RTOS_MUTEX */
@@ -121,13 +126,16 @@ void MX_FREERTOS_Init(void) {
 
   /* Create the thread(s) */
   /* definition and creation of defaultTask */
-  osThreadDef(defaultTask, StartDefaultTask, osPriorityNormal, 0, 128);
-  defaultTaskHandle = osThreadCreate(osThread(defaultTask), NULL);
+//  osThreadDef(defaultTask, StartDefaultTask, osPriorityNormal, 0, 128);
+//  defaultTaskHandle = osThreadCreate(osThread(defaultTask), NULL);
 
   /* USER CODE BEGIN RTOS_THREADS */
   /* add threads, ... */
 	osThreadDef(MainTask, MainTask, osPriorityRealtime, 0, 128);
   MainTaskHandle = osThreadCreate(osThread(MainTask), NULL);
+	
+  osThreadDef(MusicTask, MusicTask, osPriorityNormal, 0, 32);
+  MusicTaskHandle = osThreadCreate(osThread(MusicTask), NULL);
 	
 	osThreadDef(TestTask, TestTask, osPriorityNormal, 0, 32);
   TestTaskHandle = osThreadCreate(osThread(TestTask), NULL);

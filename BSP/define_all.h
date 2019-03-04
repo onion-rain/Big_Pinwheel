@@ -54,11 +54,18 @@
 #define ARM4_PULSE TIM3->CCR4
 
 #define ARM5_TIM &htim3
-#define ARM5_CHANNEL TIM_CHANNEL_1
-#define ARM5_PULSE TIM3->CCR1
+#define ARM5_CHANNEL TIM_CHANNEL_3
+#define ARM5_PULSE TIM3->CCR3
 
 #define LOGIC_ONE_PULSE (34-1)
 #define LOGIC_ZERO_PULSE (13-1)
+/** 
+  * @brief 音乐播放
+  * @refer music.h
+*/
+//#define DANCE
+#define MTIM	htim8//定时器选择
+#define MCH		TIM_CHANNEL_4
 /** 
   * @brief DBUS 串口定义
   * @refer Dbus_Uart.h
@@ -66,10 +73,16 @@
 */
 #define Dbus_Uart huart1
 /** 
-  * @brief 裁判系统串口定义
-  * @refer Judgment_Uart.h
-	* @details 更改串口后中断处理函数也要改
+  * @brief RGB灯时钟通道定义
+  * @refer My_RGB.h
 */
+#define GREEN_ON HAL_GPIO_WritePin(GPIOB, GPIO_PIN_14, GPIO_PIN_SET)
+#define GREEN_OFF HAL_GPIO_WritePin(GPIOB, GPIO_PIN_14, GPIO_PIN_RESET)
+#define RED_ON HAL_GPIO_WritePin(GPIOB, GPIO_PIN_13, GPIO_PIN_SET)
+#define RED_OFF HAL_GPIO_WritePin(GPIOB, GPIO_PIN_13, GPIO_PIN_RESET)
+#define BLUE_ON HAL_GPIO_WritePin(GPIOB, GPIO_PIN_12, GPIO_PIN_SET)
+#define BLUE_OFF HAL_GPIO_WritePin(GPIOB, GPIO_PIN_12, GPIO_PIN_RESET)
+
 /*********************通用**************************/
 
 /** 

@@ -11,7 +11,17 @@
 
 #include "Other_Tasks.h"
 #include "cmsis_os.h"
+#include "music.h"
 #include "task.h"
+
+void MusicTask(void const * argument)
+{
+  for(;;)
+  {
+		Music_Handle();//·äÃùÆ÷¾ä±ú
+    osDelay(200);
+  }
+}
 
 void TestTask(void const * argument)
 {
@@ -20,6 +30,5 @@ void TestTask(void const * argument)
 		osDelay(10);
   }
 }
-
 
 
