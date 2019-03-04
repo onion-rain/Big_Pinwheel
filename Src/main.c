@@ -78,6 +78,7 @@ void MX_FREERTOS_Init(void);
 
 /* USER CODE BEGIN 0 */
 
+int tim1_tmp = 0, tim2_tmp = 0;
 /* USER CODE END 0 */
 
 /**
@@ -110,7 +111,7 @@ int main(void)
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
   MX_DMA_Init();
-//  MX_CAN1_Init();
+//	MX_CAN1_Init();
   MX_TIM1_Init();
   MX_TIM2_Init();
   MX_TIM3_Init();
@@ -220,6 +221,10 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
   if (htim->Instance == TIM14) {
     HAL_IncTick();
   }
+	else if(htim == &htim1)
+		tim1_tmp++;
+	else if(htim == &htim2)
+		tim2_tmp++;
   /* USER CODE BEGIN Callback 1 */
 
   /* USER CODE END Callback 1 */

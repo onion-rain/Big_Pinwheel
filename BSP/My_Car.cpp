@@ -38,12 +38,16 @@ void MOTOR_Init_All(void)
 //	ARM4_PULSE = LOGIC_ONE_PULSE;
 	ARM5_PULSE = LOGIC_ZERO_PULSE;
 	__HAL_TIM_ENABLE_IT(&htim1,TIM_IT_UPDATE);
-//	HAL_TIM_Base_Start(&htim1);
-//	__HAL_TIM_ENABLE_IT(&htim4,TIM_IT_UPDATE);
-	HAL_TIM_Base_Start(&htim4);
+	__HAL_TIM_ENABLE_IT(&htim2,TIM_IT_UPDATE);
+//	HAL_TIM_Base_Start(&htim2);
 	HAL_TIM_PWM_Start(ARM1_TIM,ARM1_CHANNEL);
 //	HAL_TIM_PWM_Start(ARM2_TIM,ARM2_CHANNEL);
 //	HAL_TIM_PWM_Start(ARM3_TIM,ARM3_CHANNEL);
 //	HAL_TIM_PWM_Start(ARM4_TIM,ARM4_CHANNEL);
 	HAL_TIM_PWM_Start(ARM5_TIM,ARM5_CHANNEL);//初始化为所有RGB全亮
+}
+
+void HAL_TIM_PWM_PulseFinishedCallback(TIM_HandleTypeDef *htim)
+{
+	
 }
