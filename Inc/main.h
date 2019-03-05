@@ -59,12 +59,12 @@
 
 /* Private define ------------------------------------------------------------*/
 
+#define DBUS_TX_Pin GPIO_PIN_10
+#define DBUS_TX_GPIO_Port GPIOB
+#define DBUS_RX_Pin GPIO_PIN_11
+#define DBUS_RX_GPIO_Port GPIOB
 #define Bell_Pin GPIO_PIN_9
 #define Bell_GPIO_Port GPIOC
-#define DBUS_TX_Pin GPIO_PIN_9
-#define DBUS_TX_GPIO_Port GPIOA
-#define DBUS_RX_Pin GPIO_PIN_10
-#define DBUS_RX_GPIO_Port GPIOA
 
 /* ########################## Assert Selection ############################## */
 /**

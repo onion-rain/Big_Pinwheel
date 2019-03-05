@@ -114,8 +114,8 @@ int main(void)
   MX_CAN1_Init();
   MX_TIM2_Init();
   MX_TIM3_Init();
-  MX_USART1_UART_Init();
   MX_TIM8_Init();
+  MX_USART3_UART_Init();
   /* USER CODE BEGIN 2 */
 
   /* USER CODE END 2 */
@@ -223,13 +223,11 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
   /* USER CODE BEGIN Callback 1 */
 	else if(htim->Instance == TIM2)//ARM1-4
 	{
-//		SMD_LED_Init();
+		SMD_LED_TIM2_IT();
 	}
-	else if(htim->Instance == TIM3)//ARM5
+	else if(htim->Instance == TIM3)//ARM0
 	{
-//		if(ARM0_PULSE == LOGIC_ONE_PULSE)
-//			ARM0_PULSE = LOGIC_ZERO_PULSE;
-//		else ARM0_PULSE = LOGIC_ONE_PULSE;
+		
 	}
   /* USER CODE END Callback 1 */
 }

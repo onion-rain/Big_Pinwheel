@@ -1,3 +1,5 @@
+
+
 /** 
 * @brief    SMD型LED板级支持包
 * @details  
@@ -18,8 +20,15 @@
 #define GREEN 0x01
 #define RED 0x02
 #define BLUE 0x04
+#define RAND 0x08
+#define RUNNING_WATER 0x10
 
-void SMD_LED_Color_Set(uint8_t color);
-void SMD_LED_Init(void);
+#define ALL_ON 0x00
+#define SLIDING_WINDOW 0x01
+#define TETRIS 0x02
+#define CONVEYER_BELT 0x03
+
+void SMD_LED_Running_Water_Effect_Configuration(uint8_t arm, uint8_t mode, uint8_t parameter, uint8_t color);
+void SMD_LED_TIM2_IT(void);
 
 #endif

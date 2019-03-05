@@ -71,7 +71,7 @@
   * @refer Dbus_Uart.h
 	* @details 更改串口后中断处理函数也要改
 */
-#define Dbus_Uart huart1
+#define Dbus_Uart huart3
 /** 
   * @brief RGB灯时钟通道定义
   * @refer My_RGB.h
