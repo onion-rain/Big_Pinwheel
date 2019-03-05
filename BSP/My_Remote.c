@@ -23,8 +23,6 @@
 static uint8_t remote_mode=0;
 static uint8_t last_mode= 0xFF; //上一次遥控器的值，用于对比切换模式
 
-
-int a = 0;
 /** 
     * @brief 大符运行模式
 */
@@ -42,7 +40,7 @@ static void run_mode(uint8_t type)
 			break;
 	}
 }
-static void sao(uint8_t type)
+static void Sliding_Window(uint8_t type)
 {
 	switch(type)
 	{
@@ -51,8 +49,24 @@ static void sao(uint8_t type)
 		case RUNNING:
 			if(HAL_GetTick()%10 == 0)
 			{
-				a++;
 				SMD_LED_Running_Water_Effect_Configuration(1, SLIDING_WINDOW, 20, RED);
+			}
+			break;
+		case ENDING:
+			SMD_LED_Running_Water_Effect_Configuration(1, ALL_ON, 1, 0);
+			break;
+	}
+}
+static void Conveyer_Belt(uint8_t type)
+{
+	switch(type)
+	{
+		case STARTING:
+			break;
+		case RUNNING:
+			if(HAL_GetTick()%100 == 0)
+			{
+				SMD_LED_Running_Water_Effect_Configuration(1, CONVEYER_BELT, 10, RED);
 			}
 			break;
 		case ENDING:
@@ -135,7 +149,8 @@ static void Remote_Distribute(uint8_t mode, uint8_t type)
 		case 13:mode_green(type);break;
 		case 33:mode_red(type);break;
 		case 23:mode_blue(type);break;
-		case 12:sao(type);break;
+		case 12:Sliding_Window(type);break;
+		case 21:Conveyer_Belt(type);break;
 		default:break;
 	}
 	manager::CANSend();

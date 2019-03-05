@@ -48,15 +48,24 @@ void SMD_LED_Running_Water_Effect_Configuration(uint8_t arm, uint8_t mode, uint8
 			break;
 		case SLIDING_WINDOW:
 			memset(Arm_RGB_Data[arm][LED_Configuration_index[arm]], 0xff, parameter*3);
+			LED_Configuration_index[arm]++;//累加
+			if(LED_Configuration_index[arm] >= MAX_LED_NUM)
+				LED_Configuration_index[arm] = 0;//溢出归零
 			break;
 		case TETRIS:
 			break;
 		case CONVEYER_BELT:
+			for(uint8_t i=0; i<((MAX_LED_NUM-LED_Configuration_index[arm])/parameter); i++)
+			{
+				if(i%2 == 0)
+					memset(Arm_RGB_Data[arm][LED_Configuration_index[arm]+i*parameter], 0xff, parameter*3);
+				else memset(Arm_RGB_Data[arm][LED_Configuration_index[arm]+i*parameter], 0x00, parameter*3);
+			}
+			LED_Configuration_index[arm]++;//累加
+			if(LED_Configuration_index[arm] >= parameter)
+				LED_Configuration_index[arm] = 0;//溢出归零
 			break;
 	}
-	LED_Configuration_index[arm]++;//累加
-	if(LED_Configuration_index[arm] == MAX_LED_NUM)
-		LED_Configuration_index[arm] = 0;//溢出归零
 	
 	for(int arm=0; arm<5; arm++)
 		for(int led=0; led<MAX_LED_NUM; led++)
