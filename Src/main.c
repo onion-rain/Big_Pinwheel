@@ -111,7 +111,7 @@ int main(void)
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
   MX_DMA_Init();
-//  MX_CAN1_Init();
+  MX_CAN1_Init();
   MX_TIM2_Init();
   MX_TIM3_Init();
   MX_USART1_UART_Init();
@@ -223,13 +223,13 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
   /* USER CODE BEGIN Callback 1 */
 	else if(htim->Instance == TIM2)//ARM1-4
 	{
-		SMD_LED_Init();
+//		SMD_LED_Init();
 	}
 	else if(htim->Instance == TIM3)//ARM5
 	{
-		if(ARM5_PULSE == LOGIC_ONE_PULSE)
-			ARM5_PULSE = LOGIC_ZERO_PULSE;
-		else ARM5_PULSE = LOGIC_ONE_PULSE;
+//		if(ARM0_PULSE == LOGIC_ONE_PULSE)
+//			ARM0_PULSE = LOGIC_ZERO_PULSE;
+//		else ARM0_PULSE = LOGIC_ONE_PULSE;
 	}
   /* USER CODE END Callback 1 */
 }

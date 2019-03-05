@@ -51,11 +51,11 @@
 
 #define ARM4_TIM &htim2
 #define ARM4_CHANNEL TIM_CHANNEL_4
-#define ARM4_PULSE TIM3->CCR4
+#define ARM4_PULSE TIM2->CCR4
 
-#define ARM5_TIM &htim3
-#define ARM5_CHANNEL TIM_CHANNEL_3
-#define ARM5_PULSE TIM3->CCR3
+#define ARM0_TIM &htim3
+#define ARM0_CHANNEL TIM_CHANNEL_1
+#define ARM0_PULSE TIM3->CCR1
 
 #define LOGIC_ONE_PULSE (34-1)
 #define LOGIC_ZERO_PULSE (13-1)

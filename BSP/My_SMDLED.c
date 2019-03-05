@@ -32,13 +32,16 @@ void SMD_LED_Color_Set(uint8_t color)
 
 void SMD_LED_Init(void)
 {
-	 if(Arm_Data[0][LED_index[0]/3][LED_index[0]%3] == 0xff)
-		ARM1_PULSE = LOGIC_ONE_PULSE;
-	 else ARM1_PULSE = LOGIC_ZERO_PULSE;
-	 LED_index[0]++;
-	 if(LED_index[0] == 144)
-	 {
-		 LED_index[0] = 0;
-			//¹Ø±Õpwm
-	 }
+	if(Arm_Data[0][LED_index[0]/3][LED_index[0]%3] == 0xff)
+	ARM1_PULSE = LOGIC_ONE_PULSE;
+	else ARM1_PULSE = LOGIC_ZERO_PULSE;
+	LED_index[0]++;
+	if(LED_index[0] == 144*3)
+	{
+	 LED_index[0] = 0;
+	 HAL_TIM_PWM_Stop(ARM1_TIM,ARM1_CHANNEL);
+	}
+	ARM2_PULSE = LOGIC_ONE_PULSE;
+	ARM3_PULSE = LOGIC_ONE_PULSE;
+	ARM4_PULSE = LOGIC_ONE_PULSE;
 }
