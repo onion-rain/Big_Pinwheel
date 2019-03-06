@@ -693,7 +693,7 @@
             </File>
             <File>
               <FileName>My_SMDLED.c</FileName>
-              <FileType>1</FileType>
+              <FileType>8</FileType>
               <FilePath>..\BSP\My_SMDLED.c</FilePath>
             </File>
             <File>

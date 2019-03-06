@@ -11,6 +11,7 @@
 #include "My_SMDLED.h"
 #include "string.h"
 #include "tim.h"
+#include <algorithm>
 
 #define MAX_RGB_NUM 72//单列长度
 
@@ -50,6 +51,10 @@ void SMD_LED_Running_Water_Effect_Configuration(uint8_t arm, uint8_t mode, uint8
 	//将每个RGB的亮灭配置信息放入Arm_LED_Data
 	for(; row<5; row++)
 	{
+		if(row==1 || row==3)//1、3列前移一位
+			RGB_Start_index[arm][row] = RGB_Start_index[arm][0];//此时row=0这列已经进入下一轮，RGB_Start_index[arm][0]已经加一，故无需在此加一
+		else if(row==2)//2列前移两位
+			RGB_Start_index[arm][row] = RGB_Start_index[arm][0] + 1;
 		switch(mode)
 		{
 			case ALL_ON:
@@ -69,6 +74,10 @@ void SMD_LED_Running_Water_Effect_Configuration(uint8_t arm, uint8_t mode, uint8
 			case TETRIS:
 				break;
 			case CONVEYER_BELT:
+				
+		if(RGB_Start_index[arm][row] > parameter)
+			RGB_Start_index[arm][row] -= parameter;
+		
 				for(uint8_t i=0; i<=((MAX_RGB_NUM-RGB_Start_index[arm][row])/parameter); i++)//每个亮块的start RGB序号
 				{
 					if(RGB_Start_index[arm][row]+i*parameter < 0)
@@ -89,6 +98,8 @@ void SMD_LED_Running_Water_Effect_Configuration(uint8_t arm, uint8_t mode, uint8
 					RGB_Start_index[arm][row] = -parameter;//溢出归零
 				break;
 		}
+		if(row%2 != 0)//1、3列反转
+			std::reverse(Arm_LED_Data[arm][row][0], Arm_LED_Data[arm][row][MAX_RGB_NUM]);//此处Arm_LED_Data[arm][row][MAX_RGB_NUM-1]会导致灯条显示bug，暂未知原因
 	}
 	//将颜色信息添加入Arm_LED_Data
 	for(int row=0; row<5; row++)
