@@ -69,24 +69,24 @@ void SMD_LED_Running_Water_Effect_Configuration(uint8_t arm, uint8_t mode, uint8
 			case TETRIS:
 				break;
 			case CONVEYER_BELT:
-	//			for(uint8_t i=0; i<=((MAX_RGB_NUM-RGB_Start_index[arm])/parameter); i++)
-	//			{
-	//				if(RGB_Start_index[arm]+i*parameter < 0)
-	//					if(i%2 == 0)
-	//						memset(Arm_LED_Data[arm][0], 0xff, (parameter+RGB_Start_index[arm])*3);
-	//					else memset(Arm_LED_Data[arm][0], 0x00, (parameter+RGB_Start_index[arm])*3);
-	//				else if(RGB_Start_index[arm]+i*parameter > MAX_RGB_NUM-parameter)
-	//					if(i%2 == 0)
-	//						memset(Arm_LED_Data[arm][RGB_Start_index[arm]+i*parameter], 0xff, (MAX_RGB_NUM-RGB_Start_index[arm]-i*parameter)*3);
-	//					else memset(Arm_LED_Data[arm][RGB_Start_index[arm]+i*parameter], 0x00, (MAX_RGB_NUM-RGB_Start_index[arm]-i*parameter)*3);
-	//				else
-	//					if(i%2 == 0)
-	//						memset(Arm_LED_Data[arm][RGB_Start_index[arm]+i*parameter], 0xff, parameter*3);
-	//					else memset(Arm_LED_Data[arm][RGB_Start_index[arm]+i*parameter], 0x00, parameter*3);
-	//			}
-	//			RGB_Start_index[arm]++;//累加
-	//			if(RGB_Start_index[arm] >= parameter)
-	//				RGB_Start_index[arm] = -parameter;//溢出归零
+				for(uint8_t i=0; i<=((MAX_RGB_NUM-RGB_Start_index[arm][row])/parameter); i++)//每个亮块的start RGB序号
+				{
+					if(RGB_Start_index[arm][row]+i*parameter < 0)
+						if(i%2 == 0)
+							memset(Arm_LED_Data[arm][row][0], 0xff, (parameter+RGB_Start_index[arm][row])*3);
+						else memset(Arm_LED_Data[arm][row][0], 0x00, (parameter+RGB_Start_index[arm][row])*3);
+					else if(RGB_Start_index[arm][row]+i*parameter > MAX_RGB_NUM-parameter)
+						if(i%2 == 0)
+							memset(Arm_LED_Data[arm][row][RGB_Start_index[arm][row]+i*parameter], 0xff, (MAX_RGB_NUM-RGB_Start_index[arm][row]-i*parameter)*3);
+						else memset(Arm_LED_Data[arm][row][RGB_Start_index[arm][row]+i*parameter], 0x00, (MAX_RGB_NUM-RGB_Start_index[arm][row]-i*parameter)*3);
+					else
+						if(i%2 == 0)
+							memset(Arm_LED_Data[arm][row][RGB_Start_index[arm][row]+i*parameter], 0xff, parameter*3);
+						else memset(Arm_LED_Data[arm][row][RGB_Start_index[arm][row]+i*parameter], 0x00, parameter*3);
+				}
+				RGB_Start_index[arm][row]++;//累加
+				if(RGB_Start_index[arm][row] >= parameter)
+					RGB_Start_index[arm][row] = -parameter;//溢出归零
 				break;
 		}
 	}

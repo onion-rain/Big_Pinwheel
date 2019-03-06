@@ -120,7 +120,7 @@
         <SetRegEntry>
           <Number>0</Number>
           <Key>DLGUARM</Key>
-          <Name></Name>
+          <Name>?唚喽??唚喽?</Name>
         </SetRegEntry>
         <SetRegEntry>
           <Number>0</Number>
@@ -170,17 +170,7 @@
         <Ww>
           <count>0</count>
           <WinNumber>2</WinNumber>
-          <ItemText>RGB_Start_index</ItemText>
-        </Ww>
-        <Ww>
-          <count>1</count>
-          <WinNumber>2</WinNumber>
-          <ItemText>arm</ItemText>
-        </Ww>
-        <Ww>
-          <count>2</count>
-          <WinNumber>2</WinNumber>
-          <ItemText>row</ItemText>
+          <ItemText>RGB_Start_index,0x0A</ItemText>
         </Ww>
       </WatchWindow2>
       <Tracepoint>
