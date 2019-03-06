@@ -47,9 +47,9 @@ static void Sliding_Window(uint8_t type)
 		case STARTING:
 			break;
 		case RUNNING:
-			if(HAL_GetTick()%10 == 0)
+			if(HAL_GetTick()%20 == 0)
 			{
-				SMD_LED_Running_Water_Effect_Configuration(1, SLIDING_WINDOW, 20, RED);
+				SMD_LED_Running_Water_Effect_Configuration(1, SLIDING_WINDOW, 10, RED);
 			}
 			break;
 		case ENDING:
