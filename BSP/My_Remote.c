@@ -64,9 +64,9 @@ static void Conveyer_Belt(uint8_t type)
 		case STARTING:
 			break;
 		case RUNNING:
-			if(HAL_GetTick()%30 == 0)
+			if(HAL_GetTick()%40 == 0)
 			{
-				SMD_LED_Running_Water_Effect_Configuration(1, CONVEYER_BELT, 10, RED);
+				SMD_LED_Running_Water_Effect_Configuration(1, CONVEYER_BELT, 3, RED);
 			}
 			break;
 		case ENDING:
