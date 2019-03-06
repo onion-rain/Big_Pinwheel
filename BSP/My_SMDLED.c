@@ -12,7 +12,7 @@
 #include "string.h"
 #include "tim.h"
 
-#define MAX_LED_NUM 144
+#define MAX_LED_NUM 288
 
 uint8_t Arm_RGB_Data[5][MAX_LED_NUM][3] = {0xff};
 int16_t LED_Configuration_index[5] = {0};//SMD_LED_Running_Water_Effect_Configuration中的临时变量中的临时变量，储存当前周期下的起始灯标号
