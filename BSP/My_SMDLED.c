@@ -10,6 +10,7 @@
 
 #include "My_SMDLED.h"
 #include "string.h"
+#include "tim.h"
 
 #define MAX_LED_NUM 144
 
@@ -97,8 +98,9 @@ void SMD_LED_Running_Water_Effect_Configuration(uint8_t arm, uint8_t mode, uint8
 		ARM1_PULSE = LOGIC_ONE_PULSE;
 	else ARM1_PULSE = LOGIC_ZERO_PULSE;
 	//¿ªÆôpwmÊä³ö
+	__HAL_TIM_ENABLE_IT(&htim2,TIM_IT_UPDATE);
 //	HAL_TIM_PWM_Start(ARM0_TIM,ARM0_CHANNEL);
-	HAL_TIM_PWM_Start(ARM1_TIM,ARM1_CHANNEL);
+//	HAL_TIM_PWM_Start(ARM1_TIM,ARM1_CHANNEL);
 //	HAL_TIM_PWM_Start(ARM2_TIM,ARM2_CHANNEL);
 //	HAL_TIM_PWM_Start(ARM3_TIM,ARM3_CHANNEL);
 //	HAL_TIM_PWM_Start(ARM4_TIM,ARM4_CHANNEL);
@@ -120,7 +122,9 @@ void SMD_LED_TIM2_IT(void)
 //		Arm_index = 0;
 		LED_index[1] = 0;
 		bit_index = 1;
-		HAL_TIM_PWM_Stop(ARM1_TIM,ARM1_CHANNEL);
+//		HAL_TIM_PWM_Stop(ARM1_TIM,ARM1_CHANNEL);
+		__HAL_TIM_DISABLE_IT(&htim2,TIM_IT_UPDATE);
+		ARM1_PULSE = 0;
 	}
 }
 
