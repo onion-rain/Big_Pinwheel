@@ -15,6 +15,7 @@
 #include "define_all.h"
 #include "Global_Variable.h"
 #include "My_SMDLED.h"
+#include "string.h"
 
 #define STARTING	0//<启动时参数
 #define RUNNING		1//<运行时参数
@@ -22,6 +23,8 @@
 
 static uint8_t remote_mode=0;
 static uint8_t last_mode= 0xFF; //上一次遥控器的值，用于对比切换模式
+
+extern int16_t RGB_Start_index[5][5];//声明于My)SMDLED.c，切换模式时清零防止不同模式间干扰
 
 /** 
     * @brief 大符运行模式
@@ -36,7 +39,7 @@ static void run_mode(uint8_t type)
 		case RUNNING:
 			break;
 		case ENDING:
-//			SMD_LED_Running_Water_Effect_Configuration(1, ALL_ON, 1, 0);
+			SMD_LED_Running_Water_Effect_Configuration(1, ALL_ON, 1, 0);
 			break;
 	}
 }
@@ -53,7 +56,44 @@ static void Sliding_Window(uint8_t type)
 			}
 			break;
 		case ENDING:
-//			SMD_LED_Running_Water_Effect_Configuration(1, ALL_ON, 1, 0);
+			memset(RGB_Start_index, 0x00, sizeof(RGB_Start_index));
+			SMD_LED_Running_Water_Effect_Configuration(1, ALL_ON, 1, 0);
+			break;
+	}
+}
+static void Tetris(uint8_t type)
+{
+	switch(type)
+	{
+		case STARTING:
+			break;
+		case RUNNING:
+			if(HAL_GetTick()%100 == 0)
+			{
+				SMD_LED_Running_Water_Effect_Configuration(1, TETRIS, 10, RED);
+			}
+			break;
+		case ENDING:
+			memset(RGB_Start_index, 0x00, sizeof(RGB_Start_index));
+			SMD_LED_Running_Water_Effect_Configuration(1, ALL_ON, 1, 0);
+			break;
+	}
+}
+static void Progress_Bar_0(uint8_t type)
+{
+	switch(type)
+	{
+		case STARTING:
+			break;
+		case RUNNING:
+			if(HAL_GetTick()%30 == 0)
+			{
+				SMD_LED_Running_Water_Effect_Configuration(1, PROGRESS_BAR_0, 1, RED);
+			}
+			break;
+		case ENDING:
+			memset(RGB_Start_index, 0x00, sizeof(RGB_Start_index));
+			SMD_LED_Running_Water_Effect_Configuration(1, ALL_ON, 1, 0);
 			break;
 	}
 }
@@ -70,7 +110,8 @@ static void Conveyer_Belt(uint8_t type)
 			}
 			break;
 		case ENDING:
-//			SMD_LED_Running_Water_Effect_Configuration(1, ALL_ON, 1, 0);
+			memset(RGB_Start_index, 0x00, sizeof(RGB_Start_index));
+			SMD_LED_Running_Water_Effect_Configuration(1, ALL_ON, 1, 0);
 			break;
 	}
 }
@@ -84,7 +125,7 @@ static void mode_green(uint8_t type)
 		case RUNNING:
 			break;
 		case ENDING:
-//			SMD_LED_Running_Water_Effect_Configuration(1, ALL_ON, 1, 0);
+			SMD_LED_Running_Water_Effect_Configuration(1, ALL_ON, 1, 0);
 			break;
 	}
 }
@@ -98,7 +139,7 @@ static void mode_red(uint8_t type)
 		case RUNNING:
 			break;
 		case ENDING:
-//			SMD_LED_Running_Water_Effect_Configuration(1, ALL_ON, 1, 0);
+			SMD_LED_Running_Water_Effect_Configuration(1, ALL_ON, 1, 0);
 			break;
 	}
 }
@@ -112,7 +153,7 @@ static void mode_blue(uint8_t type)
 		case RUNNING:
 			break;
 		case ENDING:
-//			SMD_LED_Running_Water_Effect_Configuration(1, ALL_ON, 1, 0);
+			SMD_LED_Running_Water_Effect_Configuration(1, ALL_ON, 1, 0);
 			break;
 	}
 }
@@ -129,7 +170,7 @@ static void safe_mode(uint8_t type)
 		case RUNNING:
 			break;
 		case ENDING:
-//			SMD_LED_Running_Water_Effect_Configuration(1, ALL_ON, 1, 0);
+			SMD_LED_Running_Water_Effect_Configuration(1, ALL_ON, 1, 0);
 			break;
 	}
 }
@@ -151,6 +192,7 @@ static void Remote_Distribute(uint8_t mode, uint8_t type)
 		case 23:mode_blue(type);break;
 		case 12:Sliding_Window(type);break;//滑动窗口
 		case 21:Conveyer_Belt(type);break;//传送带
+		case 11:Progress_Bar_0(type);break;//俄罗斯方块
 		default:break;
 	}
 	manager::CANSend();
@@ -164,7 +206,7 @@ void Remote_Handle(void)
 	{
 		Remote_Distribute(last_mode,ENDING);       //退出之前的模式
 		Remote_Distribute(remote_mode,STARTING);   //启用当前模式 开始部分
-		Remote_Distribute(remote_mode,RUNNING);    //跑一次当前模式的running
+//		Remote_Distribute(remote_mode,RUNNING);    //跑一次当前模式的running
 		last_mode = remote_mode;
 	}
 	Remote_Distribute(remote_mode,RUNNING);      //持续当前模式

@@ -1,5 +1,3 @@
-
-
 /** 
 * @brief    SMD型LED板级支持包
 * @details  
@@ -27,6 +25,8 @@
 #define SLIDING_WINDOW 0x01
 #define TETRIS 0x02
 #define CONVEYER_BELT 0x03
+#define PROGRESS_BAR_0 0x04
+#define PROGRESS_BAR_1 0x05
 
 void SMD_LED_Running_Water_Effect_Configuration(uint8_t arm, uint8_t mode, uint8_t parameter, uint8_t color);
 void SMD_LED_TIM2_IT(void);
