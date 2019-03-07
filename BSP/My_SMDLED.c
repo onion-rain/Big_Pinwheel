@@ -108,12 +108,7 @@ static uint8_t Progress_Bar_1(uint8_t arm, uint8_t parameter)
 {
 	for(uint8_t row=0; row<5; row++)
 	{
-		if(RGB_Start_index[arm][row] < 0)
-			memset(Arm_LED_Data[arm][row][0], 0xff, (parameter+RGB_Start_index[arm][row])*3);
-		else if(RGB_Start_index[arm][row] > MAX_RGB_NUM-parameter)
-			memset(Arm_LED_Data[arm][row][RGB_Start_index[arm][row]], 0xff, (MAX_RGB_NUM-RGB_Start_index[arm][row])*3);
-		else
-			memset(Arm_LED_Data[arm][row][RGB_Start_index[arm][row]], 0xff, parameter*3);
+		memset(Arm_LED_Data[arm][row][0], 0xff, RGB_Start_index[arm][row]*3);
 		if(RGB_Start_index[arm][row] < MAX_RGB_NUM)
 			RGB_Start_index[arm][row]++;//累加
 		if(row%2 != 0)//1、3列反转
