@@ -25,9 +25,10 @@
 static uint8_t remote_mode=0;
 static uint8_t last_mode= 0xFF; //上一次遥控器的值，用于对比切换模式
 
-extern int16_t RGB_Start_index[5][5];//声明于My)SMDLED.c，切换模式时清零防止不同模式间干扰
+extern int8_t RGB_Start_index[5][5];//声明于My)SMDLED.c，切换模式时清零防止不同模式间干扰
+extern uint8_t RGB_Tail_num[5][5];//声明于My)SMDLED.c，切换模式时清零防止不同模式间干扰
 
-uint8_t return_data = 0;
+uint8_t return_data = 0;//debug专属
 
 static void Rand_Purity_Color(uint8_t type)
 {
@@ -139,13 +140,14 @@ static void Progress_Bar_2(uint8_t type)
 		case STARTING:
 			break;
 		case RUNNING:
-			if(HAL_GetTick()%100 == 0)
+			if(HAL_GetTick()%60 == 0)
 			{
-				return_data = SMD_LED_Running_Water_Effect_Configuration(1, PROGRESS_BAR_2, 0, RAND);
+				return_data = SMD_LED_Running_Water_Effect_Configuration(1, PROGRESS_BAR_2, 20, RED);
 			}
 			break;
 		case ENDING:
 			memset(RGB_Start_index, 0x00, sizeof(RGB_Start_index));
+			memset(RGB_Tail_num, 0x00, sizeof(RGB_Tail_num));
 			return_data = SMD_LED_Running_Water_Effect_Configuration(1, ALL_ON, 0, 0);
 			break;
 	}

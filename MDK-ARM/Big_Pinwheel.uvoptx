@@ -119,6 +119,14 @@
       <TargetDriverDllRegistry>
         <SetRegEntry>
           <Number>0</Number>
+          <Key>DLGUARM</Key>
+          <Name> 樧
+?蓋 樧
+?蓋 樧
+</Name>
+        </SetRegEntry>
+        <SetRegEntry>
+          <Number>0</Number>
           <Key>ARMRTXEVENTFLAGS</Key>
           <Name>-L70 -Z18 -C0 -M0 -T1</Name>
         </SetRegEntry>
@@ -170,15 +178,10 @@
         <Ww>
           <count>1</count>
           <WinNumber>2</WinNumber>
-          <ItemText>row</ItemText>
+          <ItemText>RGB_Tail_num,0x0A</ItemText>
         </Ww>
         <Ww>
           <count>2</count>
-          <WinNumber>2</WinNumber>
-          <ItemText>tmp,0x0A</ItemText>
-        </Ww>
-        <Ww>
-          <count>3</count>
           <WinNumber>2</WinNumber>
           <ItemText>return_data,0x0A</ItemText>
         </Ww>
@@ -207,7 +210,7 @@
         <aPa1>0</aPa1>
         <AscS4>0</AscS4>
         <aSer4>0</aSer4>
-        <StkLoc>0</StkLoc>
+        <StkLoc>1</StkLoc>
         <TrcWin>0</TrcWin>
         <newCpu>0</newCpu>
         <uProt>0</uProt>

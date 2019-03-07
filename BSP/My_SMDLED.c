@@ -19,14 +19,14 @@ int tmp = 0;
 #define MAX_RGB_NUM 72//单列长度
 
 uint8_t Arm_LED_Data[5][5][MAX_RGB_NUM][3] = {0xff};//Arm_LED_Data[风车臂序号][单臂RGB列数][单臂单列RGB数][单RGB LED数]
-//uint8_t Arm_index = 0;//风车臂序号(0~3)
 uint8_t row_index[5] = {0};//5个臂各自的列指针(0~4)
 uint8_t RGB_index[5] = {0};//5个臂各自的RGB指针(0~MAX_RGB_NUM-1)
 uint8_t LED_index[5] = {0};//5个臂各自的LED指针(0~2)
 uint8_t bit_index[5] = {1};//5个臂各自的数据位指针(0-7),第0个信号在SMD_LED_Color_Set中设置，中断中从第二个信号开始处理
 
 //SMD_LED_Running_Water_Effect_Configuration专属变量
-int16_t RGB_Start_index[5][5] = {0};//储存当前周期下各旋臂各列的起始RGB标号
+int8_t RGB_Start_index[5][5] = {0};//储存当前周期下各旋臂各列的起始亮RGB标号
+uint8_t RGB_Tail_num[5][5] = {0};//储存当前周期下各旋臂各列的尾部聚集的发光RGB数量(滴水进度条、俄罗斯方块专属)
 
 //滑动窗口
 static uint8_t Sliding_Window(uint8_t arm, uint8_t parameter)
@@ -45,7 +45,6 @@ static uint8_t Sliding_Window(uint8_t arm, uint8_t parameter)
 			memset(Arm_LED_Data[arm][row][RGB_Start_index[arm][row]], 0xff, (MAX_RGB_NUM-RGB_Start_index[arm][row])*3);
 		else
 			memset(Arm_LED_Data[arm][row][RGB_Start_index[arm][row]], 0xff, parameter*3);
-		
 		RGB_Start_index[arm][row]++;//累加
 		if(RGB_Start_index[arm][row] >= MAX_RGB_NUM)
 			RGB_Start_index[arm][row] = -parameter;//溢出归零
@@ -109,7 +108,12 @@ static uint8_t Progress_Bar_1(uint8_t arm, uint8_t parameter)
 {
 	for(uint8_t row=0; row<5; row++)
 	{
-		memset(Arm_LED_Data[arm][row][0], 0xff, RGB_Start_index[arm][row]*3);
+		if(RGB_Start_index[arm][row] < 0)
+			memset(Arm_LED_Data[arm][row][0], 0xff, (parameter+RGB_Start_index[arm][row])*3);
+		else if(RGB_Start_index[arm][row] > MAX_RGB_NUM-parameter)
+			memset(Arm_LED_Data[arm][row][RGB_Start_index[arm][row]], 0xff, (MAX_RGB_NUM-RGB_Start_index[arm][row])*3);
+		else
+			memset(Arm_LED_Data[arm][row][RGB_Start_index[arm][row]], 0xff, parameter*3);
 		if(RGB_Start_index[arm][row] < MAX_RGB_NUM)
 			RGB_Start_index[arm][row]++;//累加
 		if(row%2 != 0)//1、3列反转
@@ -118,17 +122,31 @@ static uint8_t Progress_Bar_1(uint8_t arm, uint8_t parameter)
 	return MAX_RGB_NUM-RGB_Start_index[arm][2];
 }
 //滴水进度条
-static uint8_t Progress_Bar_2(uint8_t arm, uint8_t parameter)
+static uint8_t Progress_Bar_2(uint8_t arm, uint8_t parameter)//该函数里可能有指针指飞，进度条满后一段时间不操作会导致死在tim8的中断里，或者进errorhandle
 {
 	for(uint8_t row=0; row<5; row++)
 	{
-		memset(Arm_LED_Data[arm][row][0], 0xff, RGB_Start_index[arm][row]*3);
-		if(RGB_Start_index[arm][row] < MAX_RGB_NUM)
-			RGB_Start_index[arm][row]++;//累加
+		//开头、结尾特殊处理
+		if(RGB_Start_index[arm][row] < 0)
+			memset(Arm_LED_Data[arm][row][0], 0xff, (parameter+RGB_Start_index[arm][row])*3);
+		else if(RGB_Start_index[arm][row] > MAX_RGB_NUM-parameter)
+			memset(Arm_LED_Data[arm][row][RGB_Start_index[arm][row]], 0xff, (MAX_RGB_NUM-RGB_Start_index[arm][row])*3);
+		else
+			memset(Arm_LED_Data[arm][row][RGB_Start_index[arm][row]], 0xff, parameter*3);
+		RGB_Start_index[arm][row]++;//累加
+		if(RGB_Start_index[arm][row] > MAX_RGB_NUM-RGB_Tail_num[arm][row]-parameter && RGB_Tail_num[arm][row] < MAX_RGB_NUM)
+		{
+			RGB_Start_index[arm][row] = -parameter;//溢出归零
+			RGB_Tail_num[arm][row] += parameter;
+		}
+		if(RGB_Tail_num[arm][row] != 0)
+			memset(Arm_LED_Data[arm][row][MAX_RGB_NUM-RGB_Tail_num[arm][row]], 0xff, RGB_Tail_num[arm][row]*3);
 		if(row%2 != 0)//1、3列反转
 			std::reverse(Arm_LED_Data[arm][row][0], Arm_LED_Data[arm][row][MAX_RGB_NUM]);//此处Arm_LED_Data[arm][row][MAX_RGB_NUM-1]会导致灯条显示bug，暂未知原因
+		if(RGB_Tail_num[arm][row] >= MAX_RGB_NUM)
+			RGB_Tail_num[arm][row] = MAX_RGB_NUM;
 	}
-	return MAX_RGB_NUM-RGB_Start_index[arm][2];
+	return MAX_RGB_NUM-RGB_Tail_num[arm][3];
 }
 //俄罗斯方块
 static uint8_t Tetris(uint8_t arm, uint8_t parameter)
@@ -199,7 +217,7 @@ uint8_t SMD_LED_Running_Water_Effect_Configuration(uint8_t arm, uint8_t mode, ui
 		{
 			switch(color & 0xf8)
 			{
-				case 0:color_set = color;break;
+				case 0:color_set = color;break;                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             
 				case RAND:color_set = rand()%6+1;break;
 				case GRADATION:break;
 				case RUNNING_WATER:break;
