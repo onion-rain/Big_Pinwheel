@@ -16,6 +16,7 @@
 #include "Global_Variable.h"
 #include "My_SMDLED.h"
 #include "string.h"
+#include <stdlib.h>
 
 #define STARTING	0//<启动时参数
 #define RUNNING		1//<运行时参数
@@ -34,7 +35,7 @@ static void run_mode(uint8_t type)
 	switch(type)
 	{
 		case STARTING:
-			SMD_LED_Running_Water_Effect_Configuration(1, ALL_ON, 1, RED|BLUE);
+			SMD_LED_Running_Water_Effect_Configuration(1, ALL_ON, 1, RAND);
 			break;
 		case RUNNING:
 			break;
@@ -115,40 +116,12 @@ static void Conveyer_Belt(uint8_t type)
 			break;
 	}
 }
-static void mode_green(uint8_t type)
+static void Rand_Purity_Color(uint8_t type)
 {
 	switch(type)
 	{
 		case STARTING:
-			SMD_LED_Running_Water_Effect_Configuration(1, ALL_ON, 1, GREEN);
-			break;
-		case RUNNING:
-			break;
-		case ENDING:
-			SMD_LED_Running_Water_Effect_Configuration(1, ALL_ON, 1, 0);
-			break;
-	}
-}
-static void mode_red(uint8_t type)
-{
-	switch(type)
-	{
-		case STARTING:
-			SMD_LED_Running_Water_Effect_Configuration(1, ALL_ON, 1, RED);
-			break;
-		case RUNNING:
-			break;
-		case ENDING:
-			SMD_LED_Running_Water_Effect_Configuration(1, ALL_ON, 1, 0);
-			break;
-	}
-}
-static void mode_blue(uint8_t type)
-{
-	switch(type)
-	{
-		case STARTING:
-			SMD_LED_Running_Water_Effect_Configuration(1, ALL_ON, 1, BLUE);
+			SMD_LED_Running_Water_Effect_Configuration(1, ALL_ON, 1, rand()%6+1);
 			break;
 		case RUNNING:
 			break;
@@ -187,9 +160,8 @@ static void Remote_Distribute(uint8_t mode, uint8_t type)
 	{
 		case 22:safe_mode(type);break;//安全模式
 		case 32:run_mode(type);break;	//运行模式
-		case 13:mode_green(type);break;
-		case 33:mode_red(type);break;
-		case 23:mode_blue(type);break;
+		case 13:Tetris(type);break;	//俄罗斯方块
+		case 33:Rand_Purity_Color(type);break;//随机纯色
 		case 12:Sliding_Window(type);break;//滑动窗口
 		case 21:Conveyer_Belt(type);break;//传送带
 		case 11:Progress_Bar_0(type);break;//俄罗斯方块

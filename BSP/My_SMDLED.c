@@ -12,6 +12,9 @@
 #include "string.h"
 #include "tim.h"
 #include <algorithm>
+#include <stdlib.h>
+
+int tmp = 0;
 
 #define MAX_RGB_NUM 72//单列长度
 
@@ -132,7 +135,6 @@ static void Progress_Bar_1(uint8_t arm, uint8_t row, uint8_t mode, uint8_t param
 	*/
 void SMD_LED_Running_Water_Effect_Configuration(uint8_t arm, uint8_t mode, uint8_t parameter, uint8_t color)
 {
-//	uint8_t row = 0;//当前臂列序号
 	//将每个RGB的亮灭配置信息放入Arm_LED_Data
 	for(uint8_t row=0; row<5; row++)
 	{
@@ -159,14 +161,22 @@ void SMD_LED_Running_Water_Effect_Configuration(uint8_t arm, uint8_t mode, uint8
 		}
 	}
 	//将颜色信息添加入Arm_LED_Data
-	for(int row=0; row<5; row++)
-		for(int led=0; led<MAX_RGB_NUM; led++)
+	uint8_t color_set = 0;
+	for(uint8_t row=0; row<5; row++)
+		for(uint8_t led=0; led<MAX_RGB_NUM; led++)
 		{
-			if(!(color & GREEN))
+			switch(color & 0xf8)
+			{
+				case 0:color_set = color;break;
+				case RAND:color_set = rand()%6+1;break;
+				case GRADATION:break;
+				case RUNNING_WATER:break;
+			}
+			if(!(color_set & GREEN))
 				Arm_LED_Data[arm][row][led][0] = 0x00;
-			if(!(color & RED))
+			if(!(color_set & RED))
 				Arm_LED_Data[arm][row][led][1] = 0x00;
-			if(!(color & BLUE))
+			if(!(color_set & BLUE))
 				Arm_LED_Data[arm][row][led][2] = 0x00;
 		}
 	//设置第一列第一个RGB中的绿色LED pwm脉冲占空比，

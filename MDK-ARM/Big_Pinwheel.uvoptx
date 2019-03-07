@@ -120,7 +120,7 @@
         <SetRegEntry>
           <Number>0</Number>
           <Key>DLGUARM</Key>
-          <Name>?蓋XH??蓋XH?</Name>
+          <Name>?蓋???蓋??</Name>
         </SetRegEntry>
         <SetRegEntry>
           <Number>0</Number>
@@ -176,6 +176,11 @@
           <count>1</count>
           <WinNumber>2</WinNumber>
           <ItemText>row</ItemText>
+        </Ww>
+        <Ww>
+          <count>2</count>
+          <WinNumber>2</WinNumber>
+          <ItemText>tmp,0x0A</ItemText>
         </Ww>
       </WatchWindow2>
       <Tracepoint>
