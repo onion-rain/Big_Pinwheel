@@ -142,7 +142,7 @@ static void Progress_Bar_2(uint8_t type)
 		case RUNNING:
 			if(HAL_GetTick()%60 == 0)
 			{
-				return_data = SMD_LED_Running_Water_Effect_Configuration(1, PROGRESS_BAR_2, 20, RED);
+				return_data = SMD_LED_Running_Water_Effect_Configuration(1, PROGRESS_BAR_2, 10, RAND);
 			}
 			break;
 		case ENDING:

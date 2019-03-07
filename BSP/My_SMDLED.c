@@ -129,13 +129,12 @@ static uint8_t Progress_Bar_2(uint8_t arm, uint8_t parameter)//¸Ãº¯ÊýÀï¿ÉÄÜÓÐÖ¸Õ
 		else
 			memset(Arm_LED_Data[arm][row][RGB_Start_index[arm][row]], 0xff, parameter*3);
 		RGB_Start_index[arm][row]++;//ÀÛ¼Ó
-		if(RGB_Start_index[arm][row] > MAX_RGB_NUM-RGB_Tail_num[arm][row]-parameter && RGB_Tail_num[arm][row] < MAX_RGB_NUM)
+		if(RGB_Start_index[arm][row] > MAX_RGB_NUM-RGB_Tail_num[arm][row]-parameter)
 		{
 			RGB_Start_index[arm][row] = -parameter;//Òç³ö¹éÁã
 			RGB_Tail_num[arm][row] += parameter;
 		}
-		if(RGB_Tail_num[arm][row] != 0)
-			memset(Arm_LED_Data[arm][row][MAX_RGB_NUM-RGB_Tail_num[arm][row]], 0xff, RGB_Tail_num[arm][row]*3);
+		memset(Arm_LED_Data[arm][row][MAX_RGB_NUM-RGB_Tail_num[arm][row]], 0xff, RGB_Tail_num[arm][row]*3);
 		if(row%2 != 0)//1¡¢3ÁÐ·´×ª
 			std::reverse(Arm_LED_Data[arm][row][0], Arm_LED_Data[arm][row][MAX_RGB_NUM]);//´Ë´¦Arm_LED_Data[arm][row][MAX_RGB_NUM-1]»áµ¼ÖÂµÆÌõÏÔÊ¾bug£¬ÔÝÎ´ÖªÔ­Òò
 		if(RGB_Tail_num[arm][row] >= MAX_RGB_NUM)
