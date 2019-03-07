@@ -59,6 +59,7 @@ void CAN1_RX0_IRQHandler(void);
 void TIM2_IRQHandler(void);
 void TIM3_IRQHandler(void);
 void USART3_IRQHandler(void);
+void TIM8_UP_TIM13_IRQHandler(void);
 void TIM8_TRG_COM_TIM14_IRQHandler(void);
 
 #ifdef __cplusplus
