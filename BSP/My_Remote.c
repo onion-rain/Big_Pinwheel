@@ -89,9 +89,27 @@ static void Progress_Bar_0(uint8_t type)
 		case STARTING:
 			break;
 		case RUNNING:
-			if(HAL_GetTick()%30 == 0)
+			if(HAL_GetTick()%100 == 0)
 			{
-				return_data = SMD_LED_Running_Water_Effect_Configuration(1, PROGRESS_BAR_0, 1, RED);
+				return_data = SMD_LED_Running_Water_Effect_Configuration(1, PROGRESS_BAR_0, 1, RAND);
+			}
+			break;
+		case ENDING:
+			memset(RGB_Start_index, 0x00, sizeof(RGB_Start_index));
+			return_data = SMD_LED_Running_Water_Effect_Configuration(1, ALL_ON, 1, 0);
+			break;
+	}
+}
+static void Progress_Bar_1(uint8_t type)
+{
+	switch(type)
+	{
+		case STARTING:
+			break;
+		case RUNNING:
+			if(HAL_GetTick()%100 == 0)
+			{
+				return_data = SMD_LED_Running_Water_Effect_Configuration(1, PROGRESS_BAR_1, 1, RAND);
 			}
 			break;
 		case ENDING:
@@ -167,6 +185,7 @@ static void Remote_Distribute(uint8_t mode, uint8_t type)
 		case 12:Sliding_Window(type);break;//滑动窗口
 		case 21:Conveyer_Belt(type);break;//传送带
 		case 11:Progress_Bar_0(type);break;//交叉进度条
+		case 31:Progress_Bar_1(type);break;//同向进度条
 		default:break;
 	}
 	manager::CANSend();
