@@ -27,6 +27,8 @@ static uint8_t last_mode= 0xFF; //上一次遥控器的值，用于对比切换模式
 
 extern int16_t RGB_Start_index[5][5];//声明于My)SMDLED.c，切换模式时清零防止不同模式间干扰
 
+uint8_t return_data = 0;
+
 /** 
     * @brief 大符运行模式
 */
@@ -35,12 +37,12 @@ static void run_mode(uint8_t type)
 	switch(type)
 	{
 		case STARTING:
-			SMD_LED_Running_Water_Effect_Configuration(1, ALL_ON, 1, RAND);
+			return_data = SMD_LED_Running_Water_Effect_Configuration(1, ALL_ON, 1, RAND);
 			break;
 		case RUNNING:
 			break;
 		case ENDING:
-			SMD_LED_Running_Water_Effect_Configuration(1, ALL_ON, 1, 0);
+			return_data = SMD_LED_Running_Water_Effect_Configuration(1, ALL_ON, 1, 0);
 			break;
 	}
 }
@@ -53,12 +55,12 @@ static void Sliding_Window(uint8_t type)
 		case RUNNING:
 			if(HAL_GetTick()%100 == 0)
 			{
-				SMD_LED_Running_Water_Effect_Configuration(1, SLIDING_WINDOW, 10, RED);
+				return_data = SMD_LED_Running_Water_Effect_Configuration(1, SLIDING_WINDOW, 10, RAND);
 			}
 			break;
 		case ENDING:
 			memset(RGB_Start_index, 0x00, sizeof(RGB_Start_index));
-			SMD_LED_Running_Water_Effect_Configuration(1, ALL_ON, 1, 0);
+			return_data = SMD_LED_Running_Water_Effect_Configuration(1, ALL_ON, 1, 0);
 			break;
 	}
 }
@@ -71,12 +73,12 @@ static void Tetris(uint8_t type)
 		case RUNNING:
 			if(HAL_GetTick()%100 == 0)
 			{
-				SMD_LED_Running_Water_Effect_Configuration(1, TETRIS, 10, RED);
+				return_data = SMD_LED_Running_Water_Effect_Configuration(1, TETRIS, 10, RAND);
 			}
 			break;
 		case ENDING:
 			memset(RGB_Start_index, 0x00, sizeof(RGB_Start_index));
-			SMD_LED_Running_Water_Effect_Configuration(1, ALL_ON, 1, 0);
+			return_data = SMD_LED_Running_Water_Effect_Configuration(1, ALL_ON, 1, 0);
 			break;
 	}
 }
@@ -89,12 +91,12 @@ static void Progress_Bar_0(uint8_t type)
 		case RUNNING:
 			if(HAL_GetTick()%30 == 0)
 			{
-				SMD_LED_Running_Water_Effect_Configuration(1, PROGRESS_BAR_0, 1, RED);
+				return_data = SMD_LED_Running_Water_Effect_Configuration(1, PROGRESS_BAR_0, 1, RED);
 			}
 			break;
 		case ENDING:
 			memset(RGB_Start_index, 0x00, sizeof(RGB_Start_index));
-			SMD_LED_Running_Water_Effect_Configuration(1, ALL_ON, 1, 0);
+			return_data = SMD_LED_Running_Water_Effect_Configuration(1, ALL_ON, 1, 0);
 			break;
 	}
 }
@@ -107,12 +109,12 @@ static void Conveyer_Belt(uint8_t type)
 		case RUNNING:
 			if(HAL_GetTick()%200 == 0)
 			{
-				SMD_LED_Running_Water_Effect_Configuration(1, CONVEYER_BELT, 3, RED);
+				return_data = SMD_LED_Running_Water_Effect_Configuration(1, CONVEYER_BELT, 3, RAND);
 			}
 			break;
 		case ENDING:
 			memset(RGB_Start_index, 0x00, sizeof(RGB_Start_index));
-			SMD_LED_Running_Water_Effect_Configuration(1, ALL_ON, 1, 0);
+			return_data = SMD_LED_Running_Water_Effect_Configuration(1, ALL_ON, 1, 0);
 			break;
 	}
 }
@@ -121,12 +123,12 @@ static void Rand_Purity_Color(uint8_t type)
 	switch(type)
 	{
 		case STARTING:
-			SMD_LED_Running_Water_Effect_Configuration(1, ALL_ON, 1, rand()%6+1);
+			return_data = SMD_LED_Running_Water_Effect_Configuration(1, ALL_ON, 1, rand()%6+1);
 			break;
 		case RUNNING:
 			break;
 		case ENDING:
-			SMD_LED_Running_Water_Effect_Configuration(1, ALL_ON, 1, 0);
+			return_data = SMD_LED_Running_Water_Effect_Configuration(1, ALL_ON, 1, 0);
 			break;
 	}
 }
@@ -138,12 +140,12 @@ static void safe_mode(uint8_t type)
 	switch(type)
 	{
 		case STARTING:
-			SMD_LED_Running_Water_Effect_Configuration(1, ALL_ON, 1, 0);
+			return_data = SMD_LED_Running_Water_Effect_Configuration(1, ALL_ON, 1, 0);
 			break;
 		case RUNNING:
 			break;
 		case ENDING:
-			SMD_LED_Running_Water_Effect_Configuration(1, ALL_ON, 1, 0);
+			return_data = SMD_LED_Running_Water_Effect_Configuration(1, ALL_ON, 1, 0);
 			break;
 	}
 }
@@ -164,7 +166,7 @@ static void Remote_Distribute(uint8_t mode, uint8_t type)
 		case 33:Rand_Purity_Color(type);break;//随机纯色
 		case 12:Sliding_Window(type);break;//滑动窗口
 		case 21:Conveyer_Belt(type);break;//传送带
-		case 11:Progress_Bar_0(type);break;//俄罗斯方块
+		case 11:Progress_Bar_0(type);break;//交叉进度条
 		default:break;
 	}
 	manager::CANSend();
