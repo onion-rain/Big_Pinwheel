@@ -29,7 +29,7 @@ uint8_t bit_index[5] = {1};//5个臂各自的数据位指针(0-7),第0个信号在SMD_LED_Color
 int16_t RGB_Start_index[5][5] = {0};//储存当前周期下各旋臂各列的起始RGB标号
 
 //滑动窗口
-static uint8_t Sliding_Window(uint8_t arm, uint8_t mode, uint8_t parameter)
+static uint8_t Sliding_Window(uint8_t arm, uint8_t parameter)
 {
 	for(uint8_t row=0; row<5; row++)
 	{
@@ -57,19 +57,8 @@ static uint8_t Sliding_Window(uint8_t arm, uint8_t mode, uint8_t parameter)
 		return 0;
 	else return return_num;
 }
-
-//俄罗斯方块
-static uint8_t Tetris(uint8_t arm, uint8_t mode, uint8_t parameter)
-{
-	for(uint8_t row=0; row<5; row++)
-	{
-		
-	}
-	return 0;
-}
-
 //传送带
-static uint8_t Conveyer_Belt(uint8_t arm, uint8_t mode, uint8_t parameter)
+static uint8_t Conveyer_Belt(uint8_t arm, uint8_t parameter)
 {
 	for(uint8_t row=0; row<5; row++)
 	{
@@ -104,9 +93,8 @@ static uint8_t Conveyer_Belt(uint8_t arm, uint8_t mode, uint8_t parameter)
 	}
 	return 0;
 }
-
 //交叉进度条
-static uint8_t Progress_Bar_0(uint8_t arm, uint8_t mode, uint8_t parameter)
+static uint8_t Progress_Bar_0(uint8_t arm, uint8_t parameter)
 {
 	for(uint8_t row=0; row<5; row++)
 	{
@@ -116,9 +104,8 @@ static uint8_t Progress_Bar_0(uint8_t arm, uint8_t mode, uint8_t parameter)
 	}
 	return MAX_RGB_NUM-RGB_Start_index[arm][2];
 }
-
 //同向进度条
-static uint8_t Progress_Bar_1(uint8_t arm, uint8_t mode, uint8_t parameter)
+static uint8_t Progress_Bar_1(uint8_t arm, uint8_t parameter)
 {
 	for(uint8_t row=0; row<5; row++)
 	{
@@ -130,6 +117,28 @@ static uint8_t Progress_Bar_1(uint8_t arm, uint8_t mode, uint8_t parameter)
 	}
 	return MAX_RGB_NUM-RGB_Start_index[arm][2];
 }
+//滴水进度条
+static uint8_t Progress_Bar_2(uint8_t arm, uint8_t parameter)
+{
+	for(uint8_t row=0; row<5; row++)
+	{
+		memset(Arm_LED_Data[arm][row][0], 0xff, RGB_Start_index[arm][row]*3);
+		if(RGB_Start_index[arm][row] < MAX_RGB_NUM)
+			RGB_Start_index[arm][row]++;//累加
+		if(row%2 != 0)//1、3列反转
+			std::reverse(Arm_LED_Data[arm][row][0], Arm_LED_Data[arm][row][MAX_RGB_NUM]);//此处Arm_LED_Data[arm][row][MAX_RGB_NUM-1]会导致灯条显示bug，暂未知原因
+	}
+	return MAX_RGB_NUM-RGB_Start_index[arm][2];
+}
+//俄罗斯方块
+static uint8_t Tetris(uint8_t arm, uint8_t parameter)
+{
+	for(uint8_t row=0; row<5; row++)
+	{
+		
+	}
+	return 0;
+}
 
 /** @brief  灯条流水灯效设置
 	* @param	[in]  arm	灯臂标号
@@ -137,10 +146,11 @@ static uint8_t Progress_Bar_1(uint8_t arm, uint8_t mode, uint8_t parameter)
   *					This parameter can be one of the following values:
 	*         @arg ALL_ON: 全亮(parameter无意义)(返回值无意义)
 	*         @arg SLIDING_WINDOW: 滑动窗口(parameter为窗口大小)(返回滑块尖端距末端距离)
-	*         @arg TETRIS: 俄罗斯方块(parameter方块大小)(返回是否游戏失败,0继续/1失败)
 	*         @arg CONVEYER_BELT: 传送带(parameter为暗块/亮块宽度)(返回值无意义)
-	*         @arg PROGRESS_BAR_0: 交叉进度条(parameter为进度条每次更新增长的长度)(返回进度信息)
-	*         @arg PROGRESS_BAR_1: 同向进度条(parameter为进度条每次更新增长的长度)(返回进度信息)
+	*         @arg PROGRESS_BAR_0: 交叉进度条(parameter无意义)(返回进度信息)
+	*         @arg PROGRESS_BAR_1: 同向进度条(parameter无意义)(返回进度信息)
+	*         @arg PROGRESS_BAR_3: 滴水进度条(parameter为水滴长度)(返回进度信息)
+	*         @arg TETRIS: 俄罗斯方块(parameter方块大小)(返回是否游戏失败,0继续/1失败)
 	* @param	[in]  parameter 参数
 	* @param	[in]  color 显示的颜色
   *					This parameter can be one of the following values:
@@ -164,19 +174,22 @@ uint8_t SMD_LED_Running_Water_Effect_Configuration(uint8_t arm, uint8_t mode, ui
 			return_data = 0;
 			break;
 		case SLIDING_WINDOW://滑动窗口
-			return_data = Sliding_Window(arm, mode, parameter);
-			break;
-		case TETRIS://俄罗斯方块
-			return_data = Tetris(arm, mode, parameter);
+			return_data = Sliding_Window(arm, parameter);
 			break;
 		case CONVEYER_BELT://传送带
-			return_data = Conveyer_Belt(arm, mode, parameter);
+			return_data = Conveyer_Belt(arm, parameter);
 			break;
 		case PROGRESS_BAR_0://交叉进度条
-			return_data = Progress_Bar_0(arm, mode, parameter);
+			return_data = Progress_Bar_0(arm, parameter);
 			break;
 		case PROGRESS_BAR_1://同向进度条
-			return_data = Progress_Bar_1(arm, mode, parameter);
+			return_data = Progress_Bar_1(arm, parameter);
+			break;
+		case PROGRESS_BAR_2://滴水进度条
+			return_data = Progress_Bar_2(arm, parameter);
+			break;
+		case TETRIS://俄罗斯方块
+			return_data = Tetris(arm, parameter);
 			break;
 	}
 	//将颜色信息添加入Arm_LED_Data
