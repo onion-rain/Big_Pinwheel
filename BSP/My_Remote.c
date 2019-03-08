@@ -70,7 +70,7 @@ static void Sliding_Window(uint8_t type)
 		case RUNNING:
 			if(HAL_GetTick()%100 == 0)
 			{
-				return_data = SMD_LED_Running_Water_Effect_Configuration(1, SLIDING_WINDOW, 10, RAND);
+				return_data = SMD_LED_Running_Water_Effect_Configuration(1, SLIDING_WINDOW, 10, RED);
 			}
 			break;
 		case ENDING:
@@ -88,7 +88,7 @@ static void Conveyer_Belt(uint8_t type)
 		case RUNNING:
 			if(HAL_GetTick()%200 == 0)
 			{
-				return_data = SMD_LED_Running_Water_Effect_Configuration(1, CONVEYER_BELT, 3, RAND);
+				return_data = SMD_LED_Running_Water_Effect_Configuration(1, CONVEYER_BELT, 3, RED);
 			}
 			break;
 		case ENDING:
@@ -106,7 +106,7 @@ static void Progress_Bar_0(uint8_t type)
 		case RUNNING:
 			if(HAL_GetTick()%100 == 0)
 			{
-				return_data = SMD_LED_Running_Water_Effect_Configuration(1, PROGRESS_BAR_0, 0, RAND);
+				return_data = SMD_LED_Running_Water_Effect_Configuration(1, PROGRESS_BAR_0, 0, RED);
 			}
 			break;
 		case ENDING:
@@ -124,7 +124,7 @@ static void Progress_Bar_1(uint8_t type)
 		case RUNNING:
 			if(HAL_GetTick()%100 == 0)
 			{
-				return_data = SMD_LED_Running_Water_Effect_Configuration(1, PROGRESS_BAR_1, 0, RAND);
+				return_data = SMD_LED_Running_Water_Effect_Configuration(1, PROGRESS_BAR_1, 0, BLUE);
 			}
 			break;
 		case ENDING:
@@ -140,9 +140,9 @@ static void Progress_Bar_2(uint8_t type)
 		case STARTING:
 			break;
 		case RUNNING:
-			if(HAL_GetTick()%60 == 0)
+			if(HAL_GetTick()%85 == 0)
 			{
-				return_data = SMD_LED_Running_Water_Effect_Configuration(1, PROGRESS_BAR_2, 10, RAND);
+				return_data = SMD_LED_Running_Water_Effect_Configuration(1, PROGRESS_BAR_2, 3, BLUE);
 			}
 			break;
 		case ENDING:
