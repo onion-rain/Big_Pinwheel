@@ -107,11 +107,10 @@ void MX_FREERTOS_Init(void); /* (MISRA C 2004 rule 8.1) */
 void MX_FREERTOS_Init(void) {
   /* USER CODE BEGIN Init */
   Dbus_Uart_Init();                 //DBUS DMA初始化
-  CAN_Init_All();                   //CAN1、2初始化
-	Music_Play(INTEL);                //初始化完成声
+  CAN_Init_All();                   //CAN1初始化
+	Music_Play(INTEL);	              //初始化完成声
 //	SMD_LED_Color_Set(GREEN);
 	MOTOR_Init_All();                 //电机选can
-	BLUE_ON;
   /* USER CODE END Init */
 
   /* USER CODE BEGIN RTOS_MUTEX */

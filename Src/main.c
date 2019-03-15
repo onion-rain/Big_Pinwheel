@@ -112,19 +112,17 @@ int main(void)
   MX_GPIO_Init();
   MX_DMA_Init();
   MX_CAN1_Init();
-  MX_TIM2_Init();
   MX_TIM3_Init();
-  MX_TIM8_Init();
   MX_USART3_UART_Init();
+  MX_UART5_Init();
+  MX_TIM4_Init();
   /* USER CODE BEGIN 2 */
 	ARM1_PULSE = 0;
 	ARM2_PULSE = 0;
 	ARM3_PULSE = 0;
-	ARM4_PULSE = 0;
-	HAL_TIM_PWM_Start(ARM1_TIM,ARM1_CHANNEL);
-	HAL_TIM_PWM_Start(ARM2_TIM,ARM2_CHANNEL);
-	HAL_TIM_PWM_Start(ARM3_TIM,ARM3_CHANNEL);
-	HAL_TIM_PWM_Start(ARM4_TIM,ARM4_CHANNEL);
+	HAL_TIM_PWM_Start(ARM_TIM,ARM1_CHANNEL);
+	HAL_TIM_PWM_Start(ARM_TIM,ARM2_CHANNEL);
+	HAL_TIM_PWM_Start(ARM_TIM,ARM3_CHANNEL);
   /* USER CODE END 2 */
 
   /* Call init function for freertos objects (in freertos.c) */
@@ -228,9 +226,9 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
     HAL_IncTick();
   }
   /* USER CODE BEGIN Callback 1 */
-	else if(htim->Instance == TIM2)//ARM1-4
+	else if(htim->Instance == TIM3)//
 	{
-		SMD_LED_TIM2_IT();
+		SMD_LED_IT();
 	}
 	else if(htim->Instance == TIM3)//ARM0
 	{

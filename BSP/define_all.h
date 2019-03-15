@@ -37,25 +37,16 @@
   * @brief pwm定时器通道定义
   * @refer My_Car.cpp
 */
-#define ARM1_TIM &htim2
+#define ARM_TIM &htim3
+
 #define ARM1_CHANNEL TIM_CHANNEL_1
-#define ARM1_PULSE TIM2->CCR1
+#define ARM1_PULSE TIM3->CCR1
 
-#define ARM2_TIM &htim2
 #define ARM2_CHANNEL TIM_CHANNEL_2
-#define ARM2_PULSE TIM2->CCR2
+#define ARM2_PULSE TIM3->CCR2
 
-#define ARM3_TIM &htim2
 #define ARM3_CHANNEL TIM_CHANNEL_3
-#define ARM3_PULSE TIM2->CCR3
-
-#define ARM4_TIM &htim2
-#define ARM4_CHANNEL TIM_CHANNEL_4
-#define ARM4_PULSE TIM2->CCR4
-
-#define ARM0_TIM &htim3
-#define ARM0_CHANNEL TIM_CHANNEL_1
-#define ARM0_PULSE TIM3->CCR1
+#define ARM3_PULSE TIM3->CCR3
 
 #define LOGIC_ONE_PULSE (34-1)
 #define LOGIC_ZERO_PULSE (13-1)
@@ -64,24 +55,14 @@
   * @refer music.h
 */
 //#define DANCE
-#define MTIM	htim8//定时器选择
-#define MCH		TIM_CHANNEL_4
+#define MTIM	htim4//定时器选择
+#define MCH		TIM_CHANNEL_2
 /** 
   * @brief DBUS 串口定义
   * @refer Dbus_Uart.h
 	* @details 更改串口后中断处理函数也要改
 */
 #define Dbus_Uart huart3
-/** 
-  * @brief RGB灯时钟通道定义
-  * @refer My_RGB.h
-*/
-#define GREEN_ON HAL_GPIO_WritePin(GPIOB, GPIO_PIN_14, GPIO_PIN_SET)
-#define GREEN_OFF HAL_GPIO_WritePin(GPIOB, GPIO_PIN_14, GPIO_PIN_RESET)
-#define RED_ON HAL_GPIO_WritePin(GPIOB, GPIO_PIN_13, GPIO_PIN_SET)
-#define RED_OFF HAL_GPIO_WritePin(GPIOB, GPIO_PIN_13, GPIO_PIN_RESET)
-#define BLUE_ON HAL_GPIO_WritePin(GPIOB, GPIO_PIN_12, GPIO_PIN_SET)
-#define BLUE_OFF HAL_GPIO_WritePin(GPIOB, GPIO_PIN_12, GPIO_PIN_RESET)
 
 /*********************通用**************************/
 

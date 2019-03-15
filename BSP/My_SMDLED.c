@@ -1,6 +1,6 @@
 /** 
 * @brief    SMD型LED板级支持包
-* @details  
+* @details  SMD_LED_IT()需要放到时钟中断回调函数中
 * @author   Onion rain
 * @date     2019.3.4
 * @version  1.0
@@ -13,6 +13,7 @@
 #include "tim.h"
 #include <algorithm>
 #include <stdlib.h>
+#include "define_all.h"
 
 int tmp = 0;
 
@@ -211,7 +212,7 @@ uint8_t SMD_LED_Running_Water_Effect_Configuration(uint8_t arm, uint8_t mode, ui
 		{
 			switch(color & 0xf8)
 			{
-				case 0:color_set = color;break;                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             
+				case 0:color_set = color;break;
 				case RAND:color_set = rand()%6+1;break;
 				case GRADATION:break;
 				case RUNNING_WATER:break;
@@ -228,11 +229,11 @@ uint8_t SMD_LED_Running_Water_Effect_Configuration(uint8_t arm, uint8_t mode, ui
 		ARM1_PULSE = LOGIC_ONE_PULSE;
 	else ARM1_PULSE = LOGIC_ZERO_PULSE;
 	//开启pwm中断
-	__HAL_TIM_ENABLE_IT(&htim2,TIM_IT_UPDATE);
+	__HAL_TIM_ENABLE_IT(ARM_TIM,TIM_IT_UPDATE);
 	return return_data;
 }
 
-void SMD_LED_TIM2_IT(void)
+void SMD_LED_IT(void)
 {
 	if(Arm_LED_Data[1][row_index[1]][RGB_index[1]][LED_index[1]] == 0xff)
 		ARM1_PULSE = LOGIC_ONE_PULSE;
@@ -252,7 +253,7 @@ void SMD_LED_TIM2_IT(void)
 				row_index[1]++;//下一列
 				if(row_index[1] == 5)
 				{
-					__HAL_TIM_DISABLE_IT(&htim2,TIM_IT_UPDATE);//关中断
+					__HAL_TIM_DISABLE_IT(ARM_TIM,TIM_IT_UPDATE);//关中断
 					ARM1_PULSE = 0;//IO拉低
 					row_index[1] = 0;//列指针清零
 					bit_index[1] = 1;//当遍历完一个臂上所有RGB的所有LED的所有位，下次进中断设置的应是第二个LED的占空比，故此处为1

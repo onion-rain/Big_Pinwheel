@@ -31,6 +31,6 @@
 #define TETRIS 0x06
 
 uint8_t SMD_LED_Running_Water_Effect_Configuration(uint8_t arm, uint8_t mode, uint8_t parameter, uint8_t color);
-void SMD_LED_TIM2_IT(void);
+void SMD_LED_IT(void);
 
 #endif
