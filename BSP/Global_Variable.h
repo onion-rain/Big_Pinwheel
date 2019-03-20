@@ -16,6 +16,9 @@
 
 extern TickType_t TimerTicks;
 extern uint32_t Pinwheel_angle_set;//大符电机角度设定
+extern uint32_t Pinwheel_speed_set;//大符电机速度设定
+
+extern int16_t can_buffer[4];
 
 float limit_float(float out, float min, float max);
 int16_t limit_short(int16_t out, int16_t min, int16_t max);

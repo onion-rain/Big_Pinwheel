@@ -117,12 +117,12 @@ int main(void)
   MX_UART5_Init();
   MX_TIM4_Init();
   /* USER CODE BEGIN 2 */
+	ARM0_PULSE = 0;
 	ARM1_PULSE = 0;
 	ARM2_PULSE = 0;
-	ARM3_PULSE = 0;
+	HAL_TIM_PWM_Start(ARM_TIM,ARM0_CHANNEL);
 	HAL_TIM_PWM_Start(ARM_TIM,ARM1_CHANNEL);
 	HAL_TIM_PWM_Start(ARM_TIM,ARM2_CHANNEL);
-	HAL_TIM_PWM_Start(ARM_TIM,ARM3_CHANNEL);
   /* USER CODE END 2 */
 
   /* Call init function for freertos objects (in freertos.c) */

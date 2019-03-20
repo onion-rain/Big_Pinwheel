@@ -15,6 +15,11 @@
 
 TickType_t TimerTicks;//系统心跳,在主线程中更新
 uint32_t Pinwheel_angle_set;//大符电机角度设定
+uint32_t Pinwheel_speed_set;//大符电机速度设定
+
+int16_t can_buffer[4] = {0};//副控发送缓冲池
+//can_buffer[0]发送遥控器模式
+//can_buffer[1]亮起臂选择(前8位作为臂选，后8位控制每个臂处于未被击打和已被击打的模式)
 
 float limit_float(float out, float min, float max)
 {

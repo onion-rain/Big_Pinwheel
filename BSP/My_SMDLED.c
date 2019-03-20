@@ -17,13 +17,16 @@
 
 int tmp = 0;
 
-#define MAX_RGB_NUM 72//单列长度
+#define MAX_RGB_NUM 64//单列长度
+#define MAX_ARM_NUM 3//单个主控最大控制臂个数
 
-uint8_t Arm_LED_Data[5][5][MAX_RGB_NUM][3] = {0xff};//Arm_LED_Data[风车臂序号][单臂RGB列数][单臂单列RGB数][单RGB LED数]
-uint8_t row_index[5] = {0};//5个臂各自的列指针(0~4)
-uint8_t RGB_index[5] = {0};//5个臂各自的RGB指针(0~MAX_RGB_NUM-1)
-uint8_t LED_index[5] = {0};//5个臂各自的LED指针(0~2)
-uint8_t bit_index[5] = {1};//5个臂各自的数据位指针(0-7),第0个信号在SMD_LED_Color_Set中设置，中断中从第二个信号开始处理
+uint8_t arm_check = 0x1f;//can_buffer[1]前8位，臂选，每一位代表一个臂，1代表当前臂亮，0表示灭
+uint8_t arm_flesh = 0x1f;//can_buffer[1]后8位，模式，每一位代表一个臂，1代表当前臂需要刷新，0表示保持现状
+uint8_t Arm_LED_Data[MAX_ARM_NUM][5][MAX_RGB_NUM][3] = {0xff};//Arm_LED_Data[风车臂序号][单臂RGB列数][单臂单列RGB数][单RGB LED数]
+uint8_t row_index[MAX_ARM_NUM] = {0};//5个臂各自的列指针(0~4)
+uint8_t RGB_index[MAX_ARM_NUM] = {0};//5个臂各自的RGB指针(0~MAX_RGB_NUM-1)
+uint8_t LED_index[MAX_ARM_NUM] = {0};//5个臂各自的LED指针(0~2)
+uint8_t bit_index[MAX_ARM_NUM] = {1};//5个臂各自的数据位指针(0-7),第0个信号在SMD_LED_Color_Set中设置，中断中从第二个信号开始处理
 
 //SMD_LED_Running_Water_Effect_Configuration专属变量
 int8_t RGB_Start_index[5][5] = {0};//储存当前周期下各旋臂各列的起始亮RGB标号
@@ -118,7 +121,7 @@ static uint8_t Progress_Bar_1(uint8_t arm, uint8_t parameter)
 	return MAX_RGB_NUM-RGB_Start_index[arm][2];
 }
 //滴水进度条
-static uint8_t Progress_Bar_2(uint8_t arm, uint8_t parameter)//该函数里可能有指针指飞，进度条满后一段时间不操作会导致死在tim8的中断里，或者进errorhandle
+static uint8_t Progress_Bar_2(uint8_t arm, uint8_t parameter)
 {
 	for(uint8_t row=0; row<5; row++)
 	{
@@ -224,39 +227,86 @@ uint8_t SMD_LED_Running_Water_Effect_Configuration(uint8_t arm, uint8_t mode, ui
 			if(!(color_set & BLUE))
 				Arm_LED_Data[arm][row][led][2] = 0x00;
 		}
-	//设置第一列第一个RGB中的绿色LED pwm脉冲占空比，
-	if(Arm_LED_Data[arm][0][LED_index[1]/3][LED_index[1]%3] == 0xff)
-		ARM1_PULSE = LOGIC_ONE_PULSE;
-	else ARM1_PULSE = LOGIC_ZERO_PULSE;
+	return return_data;
+}
+
+/** @brief  初始化pwm
+	* @param	[in]  arm	灯臂标号,每一位代表一个臂
+	*/
+void SMD_LED_PWM_Init(void)
+{
+	//设置各臂第一列第一个RGB中的绿色LED pwm脉冲占空比，
+	if(((arm_check>>0)&0x01) && ((arm_flesh>>0)&0x01))//需要亮并且需要刷新则进行pwm输出
+	{
+		if(Arm_LED_Data[0][0][LED_index[0]/3][LED_index[0]%3] == 0xff)
+			ARM0_PULSE = LOGIC_ONE_PULSE;
+		else
+			ARM0_PULSE = LOGIC_ZERO_PULSE;
+	}
+	
+	if(((arm_check>>1)&0x01) && ((arm_flesh>>1)&0x01))
+	{
+		if(Arm_LED_Data[1][0][LED_index[1]/3][LED_index[1]%3] == 0xff)
+			ARM1_PULSE = LOGIC_ONE_PULSE;
+		else
+			ARM1_PULSE = LOGIC_ZERO_PULSE;
+	}
+	
+	if(((arm_check>>2)&0x01) && ((arm_flesh>>2)&0x01))
+	{
+		if(Arm_LED_Data[2][0][LED_index[2]/3][LED_index[2]%3] == 0xff)
+			ARM2_PULSE = LOGIC_ONE_PULSE;
+		else
+			ARM2_PULSE = LOGIC_ZERO_PULSE;
+	}
+	
 	//开启pwm中断
 	__HAL_TIM_ENABLE_IT(ARM_TIM,TIM_IT_UPDATE);
-	return return_data;
 }
 
 void SMD_LED_IT(void)
 {
-	if(Arm_LED_Data[1][row_index[1]][RGB_index[1]][LED_index[1]] == 0xff)
-		ARM1_PULSE = LOGIC_ONE_PULSE;
-	else ARM1_PULSE = LOGIC_ZERO_PULSE;
-	bit_index[1]++;
-	if(bit_index[1] == 8)//一个LED的8位数据遍历完
+	for(uint8_t i=0; i<MAX_ARM_NUM && ((arm_check>>i)&0x01) && ((arm_flesh>>i)&0x01); i++)
 	{
-		bit_index[1] = 0;//数据位指针归零
-		LED_index[1]++;//下一个LED
-		if(LED_index[1] == 3)
-		{
-			LED_index[1] = 0;//LED指针清零
-			RGB_index[1]++;//下一个RGB
-			if(RGB_index[1] == MAX_RGB_NUM)
+		if(Arm_LED_Data[i][row_index[i]][RGB_index[i]][LED_index[i]] == 0xff)
+			switch(i)
 			{
-				RGB_index[1] = 0;//RGB指针清零
-				row_index[1]++;//下一列
-				if(row_index[1] == 5)
+				case 0:ARM0_PULSE = LOGIC_ONE_PULSE;break;
+				case 1:ARM1_PULSE = LOGIC_ONE_PULSE;break;
+				case 2:ARM2_PULSE = LOGIC_ONE_PULSE;break;
+			}
+		else
+			switch(i)
+			{
+				case 0:ARM0_PULSE = LOGIC_ZERO_PULSE;break;
+				case 1:ARM1_PULSE = LOGIC_ZERO_PULSE;break;
+				case 2:ARM2_PULSE = LOGIC_ZERO_PULSE;break;
+			}
+		bit_index[i]++;
+		if(bit_index[i] == 8)//一个LED的8位数据遍历完
+		{
+			bit_index[i] = 0;//数据位指针归零
+			LED_index[i]++;//下一个LED
+			if(LED_index[i] == 3)
+			{
+				LED_index[i] = 0;//LED指针清零
+				RGB_index[i]++;//下一个RGB
+				if(RGB_index[i] == MAX_RGB_NUM)
 				{
-					__HAL_TIM_DISABLE_IT(ARM_TIM,TIM_IT_UPDATE);//关中断
-					ARM1_PULSE = 0;//IO拉低
-					row_index[1] = 0;//列指针清零
-					bit_index[1] = 1;//当遍历完一个臂上所有RGB的所有LED的所有位，下次进中断设置的应是第二个LED的占空比，故此处为1
+					RGB_index[i] = 0;//RGB指针清零
+					row_index[i]++;//下一列
+					if(row_index[i] == 5)
+					{
+						if(!((i+1)<MAX_ARM_NUM && ((arm_check>>(i+1))&0x01) && ((arm_flesh>>(i+1))&0x01)))//不满足下次循环表示是需要遍历的最后一个灯臂
+						{
+							__HAL_TIM_DISABLE_IT(ARM_TIM,TIM_IT_UPDATE);//关中断
+							ARM0_PULSE = 0;
+							ARM1_PULSE = 0;
+							ARM2_PULSE = 0;
+						}
+						row_index[i] = 0;//列指针清零
+						bit_index[i] = 1;//当遍历完一个臂上所有RGB的所有LED的所有位，下次进中断设置的应是第二个LED的占空比，故此处为1
+					}
 				}
 			}
 		}
