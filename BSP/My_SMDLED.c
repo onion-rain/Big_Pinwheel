@@ -15,13 +15,9 @@
 #include <stdlib.h>
 #include "define_all.h"
 
-int tmp = 0;
-
 #define MAX_RGB_NUM 64//单列长度
 #define MAX_ARM_NUM 3//单个主控最大控制臂个数
 
-//uint8_t arm_check = 0x01;//can_buffer[1]前8位，臂选，每一位代表一个臂，1代表当前臂亮，0表示灭
-uint8_t arm_flesh = 0x1f;//can_buffer[1]后8位，模式，每一位代表一个臂，1代表当前臂需要刷新，0表示保持现状
 uint8_t Arm_LED_Data[MAX_ARM_NUM][5][MAX_RGB_NUM][3] = {0xff};//Arm_LED_Data[风车臂序号][单臂RGB列数][单臂单列RGB数][单RGB LED数]
 uint8_t row_index[MAX_ARM_NUM] = {0};//5个臂各自的列指针(0~4)
 uint8_t RGB_index[MAX_ARM_NUM] = {0};//5个臂各自的RGB指针(0~MAX_RGB_NUM-1)
@@ -236,37 +232,27 @@ uint8_t SMD_LED_Running_Water_Effect_Configuration(uint8_t arm, uint8_t mode, ui
 void SMD_LED_PWM_Init(void)
 {
 	//设置各臂第一列第一个RGB中的绿色LED pwm脉冲占空比，
-	if((arm_flesh>>0)&0x01)//需要亮并且需要刷新则进行pwm输出
-	{
-		if(Arm_LED_Data[0][0][LED_index[0]/3][LED_index[0]%3] == 0xff)
-			ARM0_PULSE = LOGIC_ONE_PULSE;
-		else
-			ARM0_PULSE = LOGIC_ZERO_PULSE;
-	}
-	
-	if((arm_flesh>>1)&0x01)
-	{
-		if(Arm_LED_Data[1][0][LED_index[1]/3][LED_index[1]%3] == 0xff)
-			ARM1_PULSE = LOGIC_ONE_PULSE;
-		else
-			ARM1_PULSE = LOGIC_ZERO_PULSE;
-	}
-	
-	if((arm_flesh>>2)&0x01)
-	{
-		if(Arm_LED_Data[2][0][LED_index[2]/3][LED_index[2]%3] == 0xff)
-			ARM2_PULSE = LOGIC_ONE_PULSE;
-		else
-			ARM2_PULSE = LOGIC_ZERO_PULSE;
-	}
-	
+	if(Arm_LED_Data[0][0][LED_index[0]/3][LED_index[0]%3] == 0xff)
+		ARM0_PULSE = LOGIC_ONE_PULSE;
+	else
+		ARM0_PULSE = LOGIC_ZERO_PULSE;
+
+	if(Arm_LED_Data[1][0][LED_index[1]/3][LED_index[1]%3] == 0xff)
+		ARM1_PULSE = LOGIC_ONE_PULSE;
+	else
+		ARM1_PULSE = LOGIC_ZERO_PULSE;
+
+	if(Arm_LED_Data[2][0][LED_index[2]/3][LED_index[2]%3] == 0xff)
+		ARM2_PULSE = LOGIC_ONE_PULSE;
+	else
+		ARM2_PULSE = LOGIC_ZERO_PULSE;
 	//开启pwm中断
 	__HAL_TIM_ENABLE_IT(ARM_TIM,TIM_IT_UPDATE);
 }
 
 void SMD_LED_IT(void)
 {
-	for(uint8_t i=0; i<MAX_ARM_NUM && ((arm_flesh>>i)&0x01); i++)
+	for(uint8_t i=0; i<MAX_ARM_NUM; i++)
 	{
 		if(Arm_LED_Data[i][row_index[i]][RGB_index[i]][LED_index[i]] == 0xff)
 			switch(i)
@@ -297,7 +283,7 @@ void SMD_LED_IT(void)
 					row_index[i]++;//下一列
 					if(row_index[i] == 5)
 					{
-						if(!((i+1)<MAX_ARM_NUM && ((arm_flesh>>(i+1))&0x01)))//不满足下次循环表示是需要遍历的最后一个灯臂
+						if(!((i+1)<MAX_ARM_NUM))//不满足下次循环表示是需要遍历的最后一个灯臂
 						{
 							__HAL_TIM_DISABLE_IT(ARM_TIM,TIM_IT_UPDATE);//关中断
 							ARM0_PULSE = 0;

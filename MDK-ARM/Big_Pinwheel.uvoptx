@@ -185,7 +185,12 @@
         <Ww>
           <count>4</count>
           <WinNumber>2</WinNumber>
-          <ItemText>i</ItemText>
+          <ItemText>arm_flash</ItemText>
+        </Ww>
+        <Ww>
+          <count>5</count>
+          <WinNumber>2</WinNumber>
+          <ItemText>arm_flashed</ItemText>
         </Ww>
       </WatchWindow2>
       <MemoryWindow1>
