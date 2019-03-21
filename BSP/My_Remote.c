@@ -29,7 +29,7 @@ extern int8_t RGB_Start_index[5][5];//ÉùÃ÷ÓÚMy)SMDLED.c£¬ÇĞ»»Ä£Ê½Ê±ÇåÁã·ÀÖ¹²»Í¬Ä
 extern uint8_t RGB_Tail_num[5][5];//ÉùÃ÷ÓÚMy)SMDLED.c£¬ÇĞ»»Ä£Ê½Ê±ÇåÁã·ÀÖ¹²»Í¬Ä£Ê½¼ä¸ÉÈÅ
 
 uint8_t return_data = 0;//debug×¨Êô
-uint8_t arm_flash = 0x00;//can_buffer[1]ºó8Î»£¬Ä£Ê½£¬Ã¿Ò»Î»´ú±íÒ»¸ö±Û£¬1´ú±íµ±Ç°±ÛĞèÒªË¢ĞÂ£¬0±íÊ¾±£³ÖÏÖ×´£¬È«0±íÊ¾È«Ãğ
+uint8_t arm_flash = 0x00, last_arm_flash = 0x00;//can_buffer[1]ºó8Î»£¬Ä£Ê½£¬Ã¿Ò»Î»´ú±íÒ»¸ö±Û£¬1´ú±íµ±Ç°±ÛĞèÒªË¢ĞÂ£¬0±íÊ¾±£³ÖÏÖ×´£¬È«0±íÊ¾È«Ãğ
 static uint8_t arm_flashed = 0x00;//ÒÑË¢ĞÂ¹ıµÄ±Û
 
 static void Rand_Purity_Color(uint8_t type)
@@ -134,15 +134,17 @@ static void run(uint8_t type)
 					{
 						arm_flash = 0x00;
 						arm_flashed = 0x00;
+						last_arm_flash = 0x00;
 					}else
 					{
-						do arm_flash = 0x01<<rand()%5;
-						while((arm_flash&arm_flashed) != 0x00);//Ä¿±ê±ÛÒÑ¾­±»Ë¢ĞÂ¹ı
+						last_arm_flash = arm_flash;//±£´æÉÏ´Î¸üĞÂµÄ±Û±êºÅ
+						do arm_flash = 0x01<<rand()%5;//Ëæ»úÉú³ÉÏÂÒ»¸öÄ¿±ê±Û±êºÅ
+						while((arm_flash&arm_flashed) != 0x00);//Ä¿±ê±ÛÒÑ¾­±»Ë¢ĞÂ¹ıÔòÖØĞÂÉú³É
 						arm_flashed |= arm_flash;//¸üĞÂÒÑ±»Ë¢ĞÂ¹ıµÄ±Û
 					}
 				}
 			#endif
-			if(HAL_GetTick()%100 == 0)
+			if(HAL_GetTick()%80 == 0)
 			{
 				if(arm_flash == 0x00)//ÇåÁãÖ¸Áî
 				{
@@ -153,19 +155,33 @@ static void run(uint8_t type)
 				}else
 				{
 					#ifndef AUXILIARY//Ö÷¿Ø
-						if((arm_flash>>0)&0x01)//ÅĞ¶ÏÊÇ·ñÒªË¢ĞÂ
+					if((arm_flash>>0)&0x01)//ÅĞ¶ÏÊÇ·ñË¢ĞÂ´«ËÍ´ø
 							return_data = SMD_LED_Running_Water_Effect_Configuration(0, CONVEYER_BELT, 3, BLUE);
 						if((arm_flash>>1)&0x01)
 							return_data = SMD_LED_Running_Water_Effect_Configuration(1, CONVEYER_BELT, 3, BLUE);
 						if((arm_flash>>2)&0x01)
 							return_data = SMD_LED_Running_Water_Effect_Configuration(2, CONVEYER_BELT, 3, BLUE);
+						
+						if((last_arm_flash>>0)&0x01)//ÅĞ¶ÏÊÇ·ñË¢ĞÂÈ«ÁÁ
+							return_data = SMD_LED_Running_Water_Effect_Configuration(0, ALL_ON, 0, BLUE);
+						if((last_arm_flash>>1)&0x01)
+							return_data = SMD_LED_Running_Water_Effect_Configuration(1, ALL_ON, 0, BLUE);
+						if((last_arm_flash>>2)&0x01)
+							return_data = SMD_LED_Running_Water_Effect_Configuration(2, ALL_ON, 0, BLUE);
 					#else//¸±¿Ø
-						if((arm_flash>>3)&0x01)//ÅĞ¶ÏÊÇ·ñÒªË¢ĞÂ
+						if((arm_flash>>3)&0x01)//ÅĞ¶ÏÊÇ·ñË¢ĞÂ´«ËÍ´ø
 							return_data = SMD_LED_Running_Water_Effect_Configuration(0, CONVEYER_BELT, 3, BLUE);
 						if((arm_flash>>4)&0x01)
 							return_data = SMD_LED_Running_Water_Effect_Configuration(1, CONVEYER_BELT, 3, BLUE);
 						if((arm_flash>>5)&0x01)
 							return_data = SMD_LED_Running_Water_Effect_Configuration(2, CONVEYER_BELT, 3, BLUE);
+						
+						if((last_arm_flash>>3)&0x01)//ÅĞ¶ÏÊÇ·ñË¢ĞÂÈ«ÁÁ
+							return_data = SMD_LED_Running_Water_Effect_Configuration(0, ALL_ON, 0, BLUE);
+						if((last_arm_flash>>4)&0x01)
+							return_data = SMD_LED_Running_Water_Effect_Configuration(1, ALL_ON, 0, BLUE);
+						if((last_arm_flash>>5)&0x01)
+							return_data = SMD_LED_Running_Water_Effect_Configuration(2, ALL_ON, 0, BLUE);
 					#endif
 				}
 				SMD_LED_PWM_Init();

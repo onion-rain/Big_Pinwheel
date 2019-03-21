@@ -16,7 +16,7 @@
 #include "My_SMDLED.h"
 
 CAN_RxHeaderTypeDef RxHead;
-extern uint8_t arm_flash;
+extern uint8_t arm_flash, last_arm_flash;
 
 static uint8_t data[8];//接收数据缓冲区
 
@@ -28,7 +28,8 @@ void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan)
 		#ifdef AUXILIARY
 		RC_Ctl.rc.s1 = (data[0]<<8 | data[1])/10;
 		RC_Ctl.rc.s2 = (data[0]<<8 | data[1])%10;
-		arm_flash = data[3];
+		arm_flash = data[2];
+		last_arm_flash = data[3];
 		#endif
 	}
 	#ifndef AUXILIARY

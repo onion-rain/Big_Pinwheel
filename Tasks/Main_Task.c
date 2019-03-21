@@ -18,7 +18,7 @@
 #include "Global_Variable.h"
 #include "Dbus_Uart.h"
 
-extern uint8_t arm_flash;
+extern uint8_t arm_flash, last_arm_flash;
 
 void MainTask(void const * argument)
 {
@@ -28,7 +28,7 @@ void MainTask(void const * argument)
 		Remote_Handle();//遥控器句柄
 		#ifndef AUXILIARY
 			can_buffer[0] = RC_Ctl.rc.s1*10+RC_Ctl.rc.s2;
-			can_buffer[1] = arm_flash;
+			can_buffer[1] = arm_flash<<8 | last_arm_flash;
 			can_send_msg(&hcan1, 0x111, can_buffer);//给副控发信息
 		#endif
 		osDelay(1);
