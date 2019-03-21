@@ -15,6 +15,9 @@
 #include "Global_Variable.h"
 #include "usart.h"
 
+TickType_t LastShootTick;
+uint8_t hit[5] = {0};
+
 #ifndef AUXILIARY
 	//电机参数设置
 	Motor_t DJI_Motor_3508(8192, 19);
@@ -39,4 +42,46 @@ void MOTOR_Init_All(void)
 	HAL_TIM_PWM_Start(ARM_TIM,ARM0_CHANNEL);
 	HAL_TIM_PWM_Start(ARM_TIM,ARM1_CHANNEL);
 	HAL_TIM_PWM_Start(ARM_TIM,ARM2_CHANNEL);
+}
+
+void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
+{
+	switch(GPIO_Pin)
+	{
+		case GPIO_PIN_6:
+			if(HAL_GetTick()-LastShootTick > 45)
+			{
+				hit[0]++;
+				LastShootTick = HAL_GetTick();
+			}
+			break;
+		case GPIO_PIN_15:
+			if(HAL_GetTick()-LastShootTick > 45)
+			{
+				hit[0]++;
+				LastShootTick = HAL_GetTick();
+			}
+			break;
+		case GPIO_PIN_14:
+			if(HAL_GetTick()-LastShootTick > 45)
+			{
+				hit[0]++;
+				LastShootTick = HAL_GetTick();
+			}
+			break;
+		case GPIO_PIN_13:
+			if(HAL_GetTick()-LastShootTick > 45)
+			{
+				hit[0]++;
+				LastShootTick = HAL_GetTick();
+			}
+			break;
+		case GPIO_PIN_12:
+			if(HAL_GetTick()-LastShootTick > 45)
+			{
+				hit[0]++;
+				LastShootTick = HAL_GetTick();
+			}
+			break;
+	}
 }
