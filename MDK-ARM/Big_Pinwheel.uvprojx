@@ -697,6 +697,11 @@
               <FilePath>..\BSP\My_SMDLED.c</FilePath>
             </File>
             <File>
+              <FileName>My_Buff.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\BSP\My_Buff.c</FilePath>
+            </File>
+            <File>
               <FileName>define_all.h</FileName>
               <FileType>5</FileType>
               <FilePath>..\BSP\define_all.h</FilePath>
