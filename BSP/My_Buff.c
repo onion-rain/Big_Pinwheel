@@ -21,6 +21,9 @@ static uint8_t return_data = 0;//debug专属
 uint8_t arm_flash = 0x00;//can_buffer[1]后8位，模式，每一位代表一个臂，1代表当前臂需要刷新，0表示保持现状，全0表示全灭
 uint8_t last_arm_flash = 0x00;//上次遍历过的臂
 uint8_t arm_flashed = 0x00;//已刷新过的臂
+#ifdef AUXILIARY
+	uint8_t flag_auxiliary = 0;//副控专属，首次进入打符成功灯效模式标志
+#endif
 
 void clear_with_purity_color(uint8_t color)
 {
@@ -69,9 +72,9 @@ void buff_all_on(void)
 
 uint8_t buff_sucess_process_var(void)
 {
-	SMD_LED_Running_Water_Effect_Configuration(0, PROGRESS_BAR_1, 1, BLUE);
-	SMD_LED_Running_Water_Effect_Configuration(1, PROGRESS_BAR_1, 1, BLUE);
-	return SMD_LED_Running_Water_Effect_Configuration(2, PROGRESS_BAR_1, 1, BLUE);
+	SMD_LED_Running_Water_Effect_Configuration(0, PROGRESS_BAR_1, 4, BLUE);
+	SMD_LED_Running_Water_Effect_Configuration(1, PROGRESS_BAR_1, 4, BLUE);
+	return SMD_LED_Running_Water_Effect_Configuration(2, PROGRESS_BAR_1, 4, BLUE);
 }
 
 void buff_flag_reset(void)
@@ -79,6 +82,9 @@ void buff_flag_reset(void)
 	arm_flash = 0x00;
 	arm_flashed = 0x00;
 	last_arm_flash = 0x00;
+	#ifdef AUXILIARY
+		flag_auxiliary = 0;//副控专属，首次进入打符成功灯效模式标志
+	#endif
 }
 
 void buff_flag_sucess(void)
@@ -92,15 +98,19 @@ void buff_flash(void)
 {
 	if(arm_flashed == 0xff && arm_flash == 0xff && last_arm_flash == 0xff)//打符成功灯效
 	{
+		#ifdef AUXILIARY
+			if(flag_auxiliary == 0)
+				memset(RGB_Start_index, 0x00, sizeof(RGB_Start_index));
+			flag_auxiliary = 1;
+		#endif
 		if(buff_sucess_process_var() == 0)//进度条完成，大符初始化
 //			buff_flag_reset();
 		;
-	}
+	}/*
 	else if(arm_flash == 0x00 && arm_flashed == 0x00 && last_arm_flash == 0x00)//成功打符灯效完成，清零指令
 	{
 		memset(RGB_Start_index, 0x00, sizeof(RGB_Start_index));
-//		clear_with_purity_color(0);
-	}else
+	}*/else
 	{
 		buff_conveyer_belt();
 		buff_all_on();
@@ -110,7 +120,7 @@ void buff_flash(void)
 
 void buff_new_armnum_produce(void)
 {
-	if(arm_flashed == 0x1f/*已全部被刷新过*/)
+	if(arm_flashed == 0x1f)/*已全部被刷新过*/
 	{
 		memset(RGB_Start_index, 0x00, sizeof(RGB_Start_index));
 		buff_flag_sucess();
