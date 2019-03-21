@@ -110,7 +110,7 @@ static uint8_t Progress_Bar_1(uint8_t arm, uint8_t parameter)
 	{
 		memset(Arm_LED_Data[arm][row][0], 0xff, RGB_Start_index[arm][row]*3);
 		if(RGB_Start_index[arm][row] < MAX_RGB_NUM)
-			RGB_Start_index[arm][row]++;//累加
+			RGB_Start_index[arm][row] += parameter;//累加
 		if(row%2 != 0)//1、3列反转
 			std::reverse(Arm_LED_Data[arm][row][0], Arm_LED_Data[arm][row][MAX_RGB_NUM]);//此处Arm_LED_Data[arm][row][MAX_RGB_NUM-1]会导致灯条显示bug，暂未知原因
 	}
@@ -160,7 +160,7 @@ static uint8_t Tetris(uint8_t arm, uint8_t parameter)
 	*         @arg SLIDING_WINDOW: 滑动窗口(parameter为窗口大小)(返回滑块尖端距末端距离)
 	*         @arg CONVEYER_BELT: 传送带(parameter为暗块/亮块宽度)(返回值无意义)
 	*         @arg PROGRESS_BAR_0: 交叉进度条(parameter无意义)(返回进度信息)
-	*         @arg PROGRESS_BAR_1: 同向进度条(parameter无意义)(返回进度信息)
+	*         @arg PROGRESS_BAR_1: 同向进度条(parameter每次更新增加的长度)(返回进度信息)
 	*         @arg PROGRESS_BAR_3: 滴水进度条(parameter为水滴长度)(返回进度信息)
 	*         @arg TETRIS: 俄罗斯方块(parameter方块大小)(返回是否游戏失败,0继续/1失败)
 	* @param	[in]  parameter 参数

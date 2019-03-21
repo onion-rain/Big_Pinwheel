@@ -14,9 +14,11 @@
 #include "stm32f4xx_hal.h"
 
 extern uint8_t arm_flash;
+
+extern void clear_with_purity_color(uint8_t color);
 extern void buff_conveyer_belt(void);
 extern void buff_all_on(void);
-extern void buff_reset(void);
+extern void buff_flag_reset(void);
 extern void buff_flash(void);
 extern void buff_new_armnum_produce(void);
 

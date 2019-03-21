@@ -56,17 +56,13 @@ static void Rand_Color(uint8_t type)
 	switch(type)
 	{
 		case STARTING:
-			return_data = SMD_LED_Running_Water_Effect_Configuration(0, ALL_ON, 0, RAND);
-			return_data = SMD_LED_Running_Water_Effect_Configuration(1, ALL_ON, 0, RAND);
-			return_data = SMD_LED_Running_Water_Effect_Configuration(2, ALL_ON, 0, RAND);
+			clear_with_purity_color(RAND);
 			SMD_LED_PWM_Init();
 			break;
 		case RUNNING:
 			break;
 		case ENDING:
-			return_data = SMD_LED_Running_Water_Effect_Configuration(0, ALL_ON, 0, 0);
-			return_data = SMD_LED_Running_Water_Effect_Configuration(1, ALL_ON, 0, 0);
-			return_data = SMD_LED_Running_Water_Effect_Configuration(2, ALL_ON, 0, 0);
+			clear_with_purity_color(0);
 			SMD_LED_PWM_Init();
 			break;
 	}
@@ -88,9 +84,7 @@ static void Sliding_Window(uint8_t type)
 			break;
 		case ENDING:
 			memset(RGB_Start_index, 0x00, sizeof(RGB_Start_index));
-			return_data = SMD_LED_Running_Water_Effect_Configuration(0, ALL_ON, 0, 0);
-			return_data = SMD_LED_Running_Water_Effect_Configuration(1, ALL_ON, 0, 0);
-			return_data = SMD_LED_Running_Water_Effect_Configuration(2, ALL_ON, 0, 0);
+			clear_with_purity_color(0);
 			SMD_LED_PWM_Init();
 			break;
 	}
@@ -112,9 +106,7 @@ static void Conveyer_Belt(uint8_t type)
 			break;
 		case ENDING:
 			memset(RGB_Start_index, 0x00, sizeof(RGB_Start_index));
-			return_data = SMD_LED_Running_Water_Effect_Configuration(0, ALL_ON, 0, 0);
-			return_data = SMD_LED_Running_Water_Effect_Configuration(1, ALL_ON, 0, 0);
-			return_data = SMD_LED_Running_Water_Effect_Configuration(2, ALL_ON, 0, 0);
+			clear_with_purity_color(0);
 			SMD_LED_PWM_Init();
 			break;
 	}
@@ -136,9 +128,7 @@ static void Progress_Bar_0(uint8_t type)
 			break;
 		case ENDING:
 			memset(RGB_Start_index, 0x00, sizeof(RGB_Start_index));
-			return_data = SMD_LED_Running_Water_Effect_Configuration(0, ALL_ON, 0, 0);
-			return_data = SMD_LED_Running_Water_Effect_Configuration(1, ALL_ON, 0, 0);
-			return_data = SMD_LED_Running_Water_Effect_Configuration(2, ALL_ON, 0, 0);
+			clear_with_purity_color(0);
 			SMD_LED_PWM_Init();
 			break;
 	}
@@ -152,17 +142,15 @@ static void Progress_Bar_1(uint8_t type)
 		case RUNNING:
 			if(HAL_GetTick()%100 == 0)
 			{
-				return_data = SMD_LED_Running_Water_Effect_Configuration(0, PROGRESS_BAR_1, 0, BLUE);
-				return_data = SMD_LED_Running_Water_Effect_Configuration(1, PROGRESS_BAR_1, 0, BLUE);
-				return_data = SMD_LED_Running_Water_Effect_Configuration(2, PROGRESS_BAR_1, 0, BLUE);
+				return_data = SMD_LED_Running_Water_Effect_Configuration(0, PROGRESS_BAR_1, 1, BLUE);
+				return_data = SMD_LED_Running_Water_Effect_Configuration(1, PROGRESS_BAR_1, 1, BLUE);
+				return_data = SMD_LED_Running_Water_Effect_Configuration(2, PROGRESS_BAR_1, 1, BLUE);
 				SMD_LED_PWM_Init();
 			}
 			break;
 		case ENDING:
 			memset(RGB_Start_index, 0x00, sizeof(RGB_Start_index));
-			return_data = SMD_LED_Running_Water_Effect_Configuration(0, ALL_ON, 0, 0);
-			return_data = SMD_LED_Running_Water_Effect_Configuration(1, ALL_ON, 0, 0);
-			return_data = SMD_LED_Running_Water_Effect_Configuration(2, ALL_ON, 0, 0);
+			clear_with_purity_color(0);
 			SMD_LED_PWM_Init();
 			break;
 	}
@@ -185,9 +173,7 @@ static void Progress_Bar_2(uint8_t type)
 		case ENDING:
 			memset(RGB_Start_index, 0x00, sizeof(RGB_Start_index));
 			memset(RGB_Tail_num, 0x00, sizeof(RGB_Tail_num));
-			return_data = SMD_LED_Running_Water_Effect_Configuration(0, ALL_ON, 0, 0);
-			return_data = SMD_LED_Running_Water_Effect_Configuration(1, ALL_ON, 0, 0);
-			return_data = SMD_LED_Running_Water_Effect_Configuration(2, ALL_ON, 0, 0);
+			clear_with_purity_color(0);
 			SMD_LED_PWM_Init();
 			break;
 	}
@@ -209,9 +195,7 @@ static void Tetris(uint8_t type)
 			break;
 		case ENDING:
 			memset(RGB_Start_index, 0x00, sizeof(RGB_Start_index));
-			return_data = SMD_LED_Running_Water_Effect_Configuration(0, ALL_ON, 0, 0);
-			return_data = SMD_LED_Running_Water_Effect_Configuration(1, ALL_ON, 0, 0);
-			return_data = SMD_LED_Running_Water_Effect_Configuration(2, ALL_ON, 0, 0);
+			clear_with_purity_color(0);
 			SMD_LED_PWM_Init();
 			break;
 	}
@@ -224,19 +208,16 @@ static void run(uint8_t type)
 			break;
 		case RUNNING:
 			#ifndef AUXILIARY
-				buff_new_armnum_produce();
+			if(HAL_GetTick()%3000 == 0)
+				buff_new_armnum_produce();//设置需要刷新的臂
 			#endif
 			if(HAL_GetTick()%80 == 0)
-			{
-				buff_flash();
-			}
+				buff_flash();//大符刷新
 			break;
 		case ENDING:
-			buff_reset();
+			buff_flag_reset();
 			memset(RGB_Start_index, 0x00, sizeof(RGB_Start_index));
-			return_data = SMD_LED_Running_Water_Effect_Configuration(0, ALL_ON, 0, 0);
-			return_data = SMD_LED_Running_Water_Effect_Configuration(1, ALL_ON, 0, 0);
-			return_data = SMD_LED_Running_Water_Effect_Configuration(2, ALL_ON, 0, 0);
+			clear_with_purity_color(0);
 			SMD_LED_PWM_Init();
 			break;
 	}
@@ -249,9 +230,7 @@ static void safe_mode(uint8_t type)
 	switch(type)
 	{
 		case STARTING:
-			return_data = SMD_LED_Running_Water_Effect_Configuration(0, ALL_ON, 0, 0);
-			return_data = SMD_LED_Running_Water_Effect_Configuration(1, ALL_ON, 0, 0);
-			return_data = SMD_LED_Running_Water_Effect_Configuration(2, ALL_ON, 0, 0);
+			clear_with_purity_color(0);
 			SMD_LED_PWM_Init();
 			break;
 		case RUNNING:

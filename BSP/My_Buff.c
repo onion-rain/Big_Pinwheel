@@ -20,7 +20,14 @@ extern uint8_t RGB_Tail_num[5][5];//ÉùÃ÷ÓÚMy)SMDLED.c£¬ÇÐ»»Ä£Ê½Ê±ÇåÁã·ÀÖ¹²»Í¬Ä£Ê
 static uint8_t return_data = 0;//debug×¨Êô
 uint8_t arm_flash = 0x00;//can_buffer[1]ºó8Î»£¬Ä£Ê½£¬Ã¿Ò»Î»´ú±íÒ»¸ö±Û£¬1´ú±íµ±Ç°±ÛÐèÒªË¢ÐÂ£¬0±íÊ¾±£³ÖÏÖ×´£¬È«0±íÊ¾È«Ãð
 uint8_t last_arm_flash = 0x00;//ÉÏ´Î±éÀú¹ýµÄ±Û
-static uint8_t arm_flashed = 0x00;//ÒÑË¢ÐÂ¹ýµÄ±Û
+uint8_t arm_flashed = 0x00;//ÒÑË¢ÐÂ¹ýµÄ±Û
+
+void clear_with_purity_color(uint8_t color)
+{
+	SMD_LED_Running_Water_Effect_Configuration(0, ALL_ON, 0, color);
+	SMD_LED_Running_Water_Effect_Configuration(1, ALL_ON, 0, color);
+	SMD_LED_Running_Water_Effect_Configuration(2, ALL_ON, 0, color);
+}
 
 void buff_conveyer_belt(void)
 {
@@ -60,21 +67,39 @@ void buff_all_on(void)
 	#endif
 }
 
-void buff_reset(void)
+uint8_t buff_sucess_process_var(void)
+{
+	SMD_LED_Running_Water_Effect_Configuration(0, PROGRESS_BAR_1, 1, BLUE);
+	SMD_LED_Running_Water_Effect_Configuration(1, PROGRESS_BAR_1, 1, BLUE);
+	return SMD_LED_Running_Water_Effect_Configuration(2, PROGRESS_BAR_1, 1, BLUE);
+}
+
+void buff_flag_reset(void)
 {
 	arm_flash = 0x00;
 	arm_flashed = 0x00;
 	last_arm_flash = 0x00;
 }
 
+void buff_flag_sucess(void)
+{
+	arm_flash = 0xff;
+	arm_flashed = 0xff;
+	last_arm_flash = 0xff;
+}
+
 void buff_flash(void)
 {
-	if(arm_flash == 0x00)//ÇåÁãÖ¸Áî
+	if(arm_flashed == 0xff && arm_flash == 0xff && last_arm_flash == 0xff)//´ò·û³É¹¦µÆÐ§
+	{
+		if(buff_sucess_process_var() == 0)//½ø¶ÈÌõÍê³É£¬´ó·û³õÊ¼»¯
+//			buff_flag_reset();
+		;
+	}
+	else if(arm_flash == 0x00 && arm_flashed == 0x00 && last_arm_flash == 0x00)//³É¹¦´ò·ûµÆÐ§Íê³É£¬ÇåÁãÖ¸Áî
 	{
 		memset(RGB_Start_index, 0x00, sizeof(RGB_Start_index));
-		return_data = SMD_LED_Running_Water_Effect_Configuration(0, ALL_ON, 0, 0);
-		return_data = SMD_LED_Running_Water_Effect_Configuration(1, ALL_ON, 0, 0);
-		return_data = SMD_LED_Running_Water_Effect_Configuration(2, ALL_ON, 0, 0);
+//		clear_with_purity_color(0);
 	}else
 	{
 		buff_conveyer_belt();
@@ -85,19 +110,18 @@ void buff_flash(void)
 
 void buff_new_armnum_produce(void)
 {
-	if(HAL_GetTick()%3000 == 0)//ÉèÖÃÐèÒªË¢ÐÂµÄ±Û
+	if(arm_flashed == 0x1f/*ÒÑÈ«²¿±»Ë¢ÐÂ¹ý*/)
 	{
-		if(arm_flashed == 0x1f)//ÒÑÈ«²¿±»Ë¢ÐÂ¹ýÔòÇåÁã
-		{
-			arm_flash = 0x00;
-			arm_flashed = 0x00;
-			last_arm_flash = 0x00;
-		}else
-		{
-			last_arm_flash = arm_flash;//±£´æÉÏ´Î¸üÐÂµÄ±Û±êºÅ
-			do arm_flash = 0x01<<rand()%5;//Ëæ»úÉú³ÉÏÂÒ»¸öÄ¿±ê±Û±êºÅ
-			while((arm_flash&arm_flashed) != 0x00);//Ä¿±ê±ÛÒÑ¾­±»Ë¢ÐÂ¹ýÔòÖØÐÂÉú³É
-			arm_flashed |= arm_flash;//¸üÐÂÒÑ±»Ë¢ÐÂ¹ýµÄ±Û
-		}
+		memset(RGB_Start_index, 0x00, sizeof(RGB_Start_index));
+		buff_flag_sucess();
+	}else if(arm_flashed == 0xff && arm_flash == 0xff && last_arm_flash == 0xff)/*ÕýÔÚµÈ´ý³É¹¦´ò·ûµÆÐ§Íê³É*/
+	{
+		
+	}else
+	{
+		last_arm_flash = arm_flash;//±£´æÉÏ´Î¸üÐÂµÄ±Û±êºÅ
+		do arm_flash = 0x01<<rand()%5;//Ëæ»úÉú³ÉÏÂÒ»¸öÄ¿±ê±Û±êºÅ
+		while((arm_flash&arm_flashed) != 0x00);//Ä¿±ê±ÛÒÑ¾­±»Ë¢ÐÂ¹ýÔòÖØÐÂÉú³É
+		arm_flashed |= arm_flash;//¸üÐÂÒÑ±»Ë¢ÐÂ¹ýµÄ±Û
 	}
 }
