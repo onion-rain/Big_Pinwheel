@@ -147,9 +147,26 @@ static uint8_t Tetris(uint8_t arm, uint8_t parameter)
 {
 	for(uint8_t row=0; row<5; row++)
 	{
-		
+		//开头、结尾特殊处理
+		if(RGB_Start_index[arm][row] < 0)
+			memset(Arm_LED_Data[arm][row][0], 0xff, (parameter+RGB_Start_index[arm][row])*3);
+		else if(RGB_Start_index[arm][row] > MAX_RGB_NUM-parameter)
+			memset(Arm_LED_Data[arm][row][RGB_Start_index[arm][row]], 0xff, (MAX_RGB_NUM-RGB_Start_index[arm][row])*3);
+		else
+			memset(Arm_LED_Data[arm][row][RGB_Start_index[arm][row]], 0xff, parameter*3);
+		RGB_Start_index[arm][row]++;//累加
+		if(RGB_Start_index[arm][row] > MAX_RGB_NUM-RGB_Tail_num[arm][row]-parameter)
+		{
+			RGB_Start_index[arm][row] = -parameter;//溢出归零
+			RGB_Tail_num[arm][row] += parameter;
+		}
+		memset(Arm_LED_Data[arm][row][MAX_RGB_NUM-RGB_Tail_num[arm][row]], 0xff, RGB_Tail_num[arm][row]*3);
+		if(row%2 != 0)//1、3列反转
+			std::reverse(Arm_LED_Data[arm][row][0], Arm_LED_Data[arm][row][MAX_RGB_NUM]);//此处Arm_LED_Data[arm][row][MAX_RGB_NUM-1]会导致灯条显示bug，暂未知原因
+		if(RGB_Tail_num[arm][row] >= MAX_RGB_NUM)
+			RGB_Tail_num[arm][row] = MAX_RGB_NUM;
 	}
-	return 0;
+	return MAX_RGB_NUM-RGB_Tail_num[arm][3];
 }
 
 /** @brief  灯条流水灯效设置

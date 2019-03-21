@@ -1,8 +1,8 @@
 /** 
-* @brief    SMD型LED板级支持包
+* @brief    大符
 * @details  
 * @author   Onion rain
-* @date     2019.3.4
+* @date     2019.3.21
 * @version  1.0
 * @par Copyright (c):  Onion rain
 * @par 日志

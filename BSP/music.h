@@ -14,6 +14,14 @@ void Music_Init(void);
 void Music_Stop(void); //音乐停止
 
 extern song warning[];
+extern song warning1[];
+extern song warning2[];
+extern song warning3[];
+extern song warning4[];
+extern song warning5[];
+extern song warning6[];
+extern song warning7[];
+extern song warning8[];
 extern song jile[];
 extern song Castle_in_the_Sky[];
 extern song ItsOK[];

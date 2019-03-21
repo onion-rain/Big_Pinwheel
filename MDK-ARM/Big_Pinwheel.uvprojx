@@ -702,6 +702,11 @@
               <FilePath>..\BSP\My_Buff.c</FilePath>
             </File>
             <File>
+              <FileName>My_Tetris.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\BSP\My_Tetris.c</FilePath>
+            </File>
+            <File>
               <FileName>define_all.h</FileName>
               <FileType>5</FileType>
               <FilePath>..\BSP\define_all.h</FilePath>
