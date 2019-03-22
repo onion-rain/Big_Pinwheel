@@ -28,7 +28,9 @@ static uint8_t last_mode= 0xFF; //上一次遥控器的值，用于对比切换模式
 
 extern int8_t RGB_Start_index[5][5];//声明于My)SMDLED.c，切换模式时清零防止不同模式间干扰
 extern uint8_t RGB_Tail_num[5][5];//声明于My)SMDLED.c，切换模式时清零防止不同模式间干扰
-extern uint8_t hit[5];//声明于My_Car.h，记录五个装甲板的打击次数
+#ifndef AUXILIARY
+	extern uint8_t hit[17];//声明于My_Car.h，记录五个装甲板的打击次数
+#endif
 
 static uint8_t return_data = 0;//debug专属
 
@@ -206,14 +208,17 @@ static void run(uint8_t type)
 	switch(type)
 	{
 		case STARTING:
+			#ifndef AUXILIARY
+				hit[0] = 1;//开启第一个臂
+			#endif
 			break;
 		case RUNNING:
 			#ifndef AUXILIARY
 //			if(HAL_GetTick()%3000 == 0)
-			if(hit[0] || hit[1] || hit[2] || hit[3] || hit[4])
+			if(hit[arm_flash])
 			{
 				buff_new_armnum_produce();//设置需要刷新的臂
-				memset(hit, 0, 5);
+				memset(hit, 0, 17);
 			}
 			#endif
 			if(HAL_GetTick()%80 == 0)
