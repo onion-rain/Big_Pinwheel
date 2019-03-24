@@ -30,6 +30,10 @@
 	*		V6.10 修复了pid类中start_time导致积分异常的bug
 	*		V6.10a 真正修复了pid类中start_time导致积分异常的bug
 	*		V6.11  修复了Block_Type更新后不能工作的问题
+	*		V6.12  移除电机中自带的电流环，同时在底盘类型中提供了电流环控制，并提供了功率控制系统，使用时需要在CarDrv_Config.hpp中添加 \n 
+						 功率限制LIMIT_P宏定义， 不需要限制功率的话不提供电流环即可.同时添加了@ref manager::UserProcess()中间处理函数，允许 \n
+						 用户在pid运行后发送前添加自定义处理逻辑，同时还允许用户将已定义的电机作为一个非独立电机通过参数 @ref manager::cooperative \n
+						 。设定该参数后@ref manager::CANSend() 将不会自动运行该电机的pid，需要用户在@ref manager::UserProcess()自行处理pid.
 */  
 #include "Car_Driver.hpp"
 #include "string.h"
@@ -279,6 +283,16 @@ WEAK void manager::CANUpdate(CAN_HandleTypeDef* _hcan, CAN_RxHeaderTypeDef* RxHe
 				CAN2MotorList[id-0x201]->update(Data);
 }
 /** 
+* @brief  CAN总线上的自定义数据处理函数
+* @par 日志 
+*       2019年3月8日16:12:26 wmd 该函数被创建
+*/
+WEAK void manager::UserProcess(void)
+{
+    //该函数本身不执行任何操作，需要在PID跑完，发送之前执行代码的话就在自己的文件重写该函数即可
+    UNUSED(UserProcess);
+}
+/** 
 	* @brief  CAN发送总管.所有的CAN电机都会在这里进行处理，发送
 	* @retval  0 成功
 	* @retval  第一位置1 CAN1 0x200发送失败
@@ -289,7 +303,7 @@ WEAK void manager::CANUpdate(CAN_HandleTypeDef* _hcan, CAN_RxHeaderTypeDef* RxHe
 	*       2018年10月31日16:46:48 处理逻辑加深
 	*       2018年11月1日20:54:09  加入在线电机管理，离线电机不发送的功能在此处实现
 	*       2019年1月19日14:34:55  处理逻辑进一步优化，每一个电机不局限于位置和速度两种， 可以自由增加功能，不再需要在CANSend里勉强了 
-	*       
+    *       2019年3月14日15:09:13 加入了合作类型电机，合作类型电机不在CANSend中自动处理，要求这类电机应在UserHandle中处理
 */
 uint8_t manager::CANSend(void)
 {
@@ -299,7 +313,7 @@ uint8_t manager::CANSend(void)
 		{
 			if(CAN1MotorList[i]!=NULL)//如果这个电机存在
 			{
-				CAN1MotorList[i]->Handle();
+				if(CAN1MotorList[i]->cooperative==0)CAN1MotorList[i]->Handle();//如果不是协作型电机，就执行其单独程序
 				if(HAL_GetTick() - CAN1MotorList[i]->LastUpdateTime > 10)//如果电机的数据已经超过10ms没有更新了
 				{
 					CAN1_OnlineID &= ~(0x01<<i);//对相应online位置0
@@ -316,7 +330,7 @@ uint8_t manager::CANSend(void)
 		{
 			if(CAN2MotorList[i]!=NULL)//如果这个电机存在
 			{
-				CAN2MotorList[i]->Handle();
+				if(CAN2MotorList[i]->cooperative==0)CAN2MotorList[i]->Handle();//如果不是协作型电机，就执行其单独程序
 				if(HAL_GetTick() - CAN2MotorList[i]->LastUpdateTime > 10)//如果电机的数据已经超过10ms没有更新了
 				{
 					CAN2_OnlineID &= ~(0x01<<i);//对相应online位置0
@@ -327,6 +341,8 @@ uint8_t manager::CANSend(void)
 			}
 		}
 	}
+	if(chassis::point!=NULL)chassis::point->Handle();//如果存在底盘的话则进行底盘的功率控制处理
+	UserProcess();//进行用户的自定义数据处理
 	//以下为发送处理
 	uint8_t check=0;
 	uint8_t result=0;
@@ -363,14 +379,13 @@ WEAK void manager::Speed_F_Set(float f)///设定前馈量
 	* @par 日志 
 	*
 */
-WEAK motor::motor(const uint8_t can_num, const uint16_t _can_id, Motor_t *motor_type, pid *_PID_In, pid *_PID_Out, pid *_PID_Current, int16_t *CurrentSource)
-	:MotorType(motor_type), PID_In(_PID_In), PID_Out(_PID_Out), PID_Current(_PID_Current)
+WEAK motor::motor(const uint8_t can_num, const uint16_t _can_id, Motor_t *motor_type, pid *_PID_In, pid *_PID_Out)
+	:MotorType(motor_type), PID_In(_PID_In), PID_Out(_PID_Out)
 {
 	//在motor对象表里面加入自己的指针
 	if(can_num==1)CAN1MotorList[_can_id-0x201]=this;
 	if(can_num==2)CAN2MotorList[_can_id-0x201]=this;
 	can_code=can_num*10+_can_id-0x201;
-	RealCurrent = CurrentSource;
 }
 /** 
 	* @brief  电机中断更新数据的函数
@@ -424,7 +439,7 @@ WEAK void motor::Safe_Set(void)
 {
 	if(block!=NULL)block->IsBlock=0;//去除堵转标志，避免在逻辑中依然认为是堵转
 	RunState = Stop;
-	CurrentSend = 0;
+	TargetCurrent = 0;
 	InsertCurrent();
 }
 /** 
@@ -473,7 +488,7 @@ WEAK void motor::Position_Run(void)
 	* @note 该函数由库内部托管处理
 	* @par 日志 
 	*       2018年10月31日17:34:04 创建该函数
-	*
+    *       2019年3月9日16:20:28 删除了对Current_Run()的继续迭代！本次改动不能够向下兼容
 */
 WEAK void motor::Speed_Run(void)
 {
@@ -484,12 +499,7 @@ WEAK void motor::Speed_Run(void)
 		Speed_LPF = LPF_NUM*(RealSpeed-LastSpeed) + (1-LPF_NUM)*(Speed_LPF);//速度前馈低通滤波器
 		TargetCurrent = TargetCurrent + Speed_LPF * Speed_F;//此处第二项为速度环前馈
 	}
-	if(RealCurrent == NULL)//无电流环,则电流发送值直接等于目标电流值
-	{
-		CurrentSend = TargetCurrent;
-		InsertCurrent();
-	}
-	else Current_Run();
+    InsertCurrent();
 }
 /** 
 	* @brief  电流环PID
@@ -498,13 +508,13 @@ WEAK void motor::Speed_Run(void)
 	*       2019年1月14日 创建该函数
 	*
 */
-WEAK void motor::Current_Run(void)
-{
-	if(PID_Current==NULL)while(1);//若有电流采样数据无电流环pid，暴露错误
-	if(RealSpeed<0)*RealCurrent *= -1;//采样电流符号
-	CurrentSend = PID_Current->pid_run(this->TargetCurrent - *RealCurrent);
-	InsertCurrent();
-}
+//WEAK void motor::Current_Run(void)
+//{
+//	if(PID_Current==NULL)while(1);//若有电流采样数据无电流环pid，暴露错误
+//	if(RealSpeed<0)*RealCurrent *= -1;//采样电流符号
+//	CurrentSend = PID_Current->pid_run(this->TargetCurrent - *RealCurrent);
+//	InsertCurrent();
+//}
 /** 
 	* @brief  根据优先级把要发送的电流值送入列表中等待发送
 	* @par 日志 
@@ -513,9 +523,9 @@ WEAK void motor::Current_Run(void)
 WEAK void motor::InsertCurrent(void)
 {
 	if(can_code/10==1)
-		CAN1CurrentList[can_code%10] = CurrentSend;
+		CAN1CurrentList[can_code%10] = TargetCurrent;
 	if(can_code/10==2)
-		CAN2CurrentList[can_code%10] = CurrentSend;
+		CAN2CurrentList[can_code%10] = TargetCurrent;
 }
 /** 
 	* @brief  对该电机启用堵转检测
@@ -532,7 +542,7 @@ int8_t motor::Enable_Block(uint16_t Limit, uint16_t time, uint16_t err_num)
 	if(block==NULL)
 	{
 		//分配内存
-		block=new block_type(CurrentSend, RealAngle);//注意 这里的电流变量值和softmotor不一样
+		block=new block_type(TargetCurrent, RealAngle);//注意 这里的电流变量值和softmotor不一样
 		if(block==NULL)return -1;
 	}
 	block->Block_Init(Limit, time, err_num);
@@ -599,7 +609,6 @@ WEAK void softmotor::Position_Run(void)
 	err+=MotorType->max_mechanical_position*(Soft_TargetPosition-Soft_RealPosition);//加上圈数位置误差
 	TargetSpeed = PID_Out->pid_run(err);//位置环得到目标速度
 	TargetCurrent = PID_In->pid_run(TargetSpeed-RealSpeed);
-	CurrentSend = TargetCurrent;//无电流环，目标电流即为电流发送值
 	InsertCurrent();
 }
 /** 
@@ -988,6 +997,7 @@ WEAK void softcloud::Position_Run(void)
 	else TargetCurrent = PID_In->nonlinear_pid_run(TargetSpeed-RealSpeed); //非线性pid计算后得到目标电流
 	InsertCurrent();
 }
+chassis* chassis::point;
 ////*******************************************全新底盘类********************************************************************////
 /** 
 	* @brief  底盘对象构建函数
@@ -995,9 +1005,9 @@ WEAK void softcloud::Position_Run(void)
 	* @param [in]   First_can_id 底盘电机的第一个id号 如输入0x201 则底盘为0x201,0x202,0x203,0x204
 	* @param [in]   *motor_type 电机类型结构体指针
 	* @param [in]   speed_pid 速度环PID指针
-	* @param [in]   turnpid 转弯PID指针
-	* @param [in]   current_pid 电流环PID指针
-	* @param [in]   CurrentSource 电流数据来源
+    * @param [in]   turnpid 转弯PID指针 可以为空
+    * @param [in]   current_pid 电流环PID指针 可以为空 为空则表示该车不限功率
+    * @param [in]   CurrentSource 电流数据来源 可以为空 同上
 	* @retval  OK  成功 
 	* @retval  ERROR   错误  
 	* @par 日志 
@@ -1005,12 +1015,16 @@ WEAK void softcloud::Position_Run(void)
 */
 WEAK chassis::chassis(uint8_t can_num, uint16_t First_can_id, Motor_t *motor_type, pid *speed_pid, pid* turnpid, pid *current_pid, int16_t *CurrentSource):Turn_PID(turnpid)
 {
+	if(point==NULL)point=this;
+	else while(1);//走到这里说明您声明了2个或以上的底盘对象了！
 	//填充底盘的轮子和pid的vector 填充4个
 	for(uint8_t i=0;i<4;i++)
 	{
 		Pid_spe[i]=new pid(*speed_pid);
 		Pid_current[i]=new pid(*current_pid);
-		Motor[i]=new softmotor(can_num, First_can_id+i, motor_type, Pid_spe[i], NULL, Pid_current[i], &CurrentSource[i]);
+		this->CurrentSource[i]=CurrentSource+i;
+		Motor[i]=new softmotor(can_num, First_can_id+i, motor_type, Pid_spe[i], NULL);
+		//Motor[i]->cooperative=1;//声明该电机为底盘机构的一部分，不使用单独的发送函数
 	}
 }
 /** 
@@ -1075,7 +1089,36 @@ WEAK void chassis::Safe()//不是制动
 	for(uint8_t i=0;i<4;i++)
 		Motor[i]->Safe_Set();
 }
-
+/** 
+* @brief  底盘的托管处理程序 建议保持和CANSend同周期执行 需要手动在UserHandle中调用
+* @par 日志 
+*   2019年3月9日16:48:07 该函数被创建
+*   2019年3月19日15:37:36 需要在CarDriver_Config.hpp中添加LIMIT_P的定义，否则会报错
+*/
+WEAK void chassis::Handle()
+{
+	//以首电机确认车辆是否处于非停止状态或不需要限制功率
+	if(Motor[0]->RunState==0 || Pid_current[0]==NULL)return;
+	//注意：该默认处理函数为仅保证功率限制的功能，并且电源电压为常量，需要加入超级电容或电源变化的话需要重写
+	float calcPower=0;
+	uint8_t i;    
+	for(i=0;i<4;i++)//按照四个轮子的功率计算需要受限的功率
+	{
+	    calcPower+=24.0f*ABS(point->Motor[i]->TargetCurrent)/819.2f;
+	}     
+	if(calcPower>LIMIT_P)//理论功率已经超额
+	{
+	     for(i=0;i<4;i++)Motor[i]->TargetCurrent*=LIMIT_P/calcPower;//总体四轮压限
+	}
+	int8_t flag=1;//电流的正负标志 1为正 -1位负
+	for(i=0;i<4;i++)
+	{
+		if(Motor[i]->RealSpeed<0)flag=-1;
+		else flag=1;
+		Motor[i]->TargetCurrent=Pid_current[i]->pid_run(Motor[i]->TargetCurrent/819.2f*1000.0f-*CurrentSource[i]*flag);
+		Motor[i]->InsertCurrent();
+	}
+}
 ////*******************************************底盘控制类for云台********************************************************************////
 /** 
 	* @brief  底盘控制类对象构建函数

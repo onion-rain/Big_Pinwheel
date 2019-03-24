@@ -90,11 +90,14 @@ class manager//电机管家抽象类
 	public:
 		static int8_t CAN1_OnlineID;//!<CAN1在线的ID列表，[0:7]分别为0x201到0x207的电机在线状态
 		static int8_t CAN2_OnlineID;//!<CAN2在线的ID列表，[0:7]分别为0x201到0x207的电机在线状态
-		RunState_t RunState=Stop;
+		RunState_t RunState=Stop;   //!<电机的运行状态
+		//!电机是否是协同工作的，如果属于某机构的一部分，则该值可以置1，此时Handle()函数不会由CANSend执行，需要自己实现，从而完成电机组合逻辑
+		uint8_t cooperative;          
 		uint8_t Is_Offline(void);//!<判断当前电机是否处于离线状态
 		//!全局的CAN收发函数,必须必须必须先调用CANSelect()且必须在CAN接收打开前调用本函数确认接收句柄 Update函数放在CAN接收回调里面,Send保证周期执行,
 		static void CANSelect(CAN_HandleTypeDef* canhandle1,CAN_HandleTypeDef* canhandle2);
 		static void CANUpdate(CAN_HandleTypeDef* _hcan,CAN_RxHeaderTypeDef* RxHead,uint8_t* Data);//!<全局的接收处理函数,统一管配所有电机
+		static void UserProcess(void);          //!<在PID跑完 发送前进行的数据处理函数，建议以重写的形式进行新的处理
 		static uint8_t CANSend(void);          //!<全局的发送函数，统一管配所有电机
 		void Speed_F_Set(float f);             //!<设定前馈量 输入电机的新的值
 		virtual void Safe_Set(void) = 0;       //!<子类必须实现的纯虚函数
@@ -107,18 +110,16 @@ class manager//电机管家抽象类
 		static manager* CAN2MotorList[8];           //!<CAN2电机地址列表
 		static int16_t CAN2CurrentList[8];          //!<CAN2电流列表
 		uint32_t LastUpdateTime;                    //!<上次更新的时间
-		float Speed_LPF;                          //!<速度前馈低通滤波器
-		float Speed_F;                            //!<速度前馈参数
+		float Speed_LPF;                            //!<速度前馈低通滤波器
+		float Speed_F;                              //!<速度前馈参数
 		
 		virtual void update(uint8_t Data[]) = 0;    //!<子类必须实现的纯虚函数
-        virtual void Handle(void) = 0;
+		virtual void Handle(void) = 0;              //!<子类必须实现的发送管理函数
 };
 class motor:public manager//!普通电机类型
 {
 	public:
 		float RealAngle;          //!<根据机械角计算出的真实角度
-		int16_t CurrentSend;      //!<电流发送值
-		int16_t *RealCurrent = NULL;//!<指向真实电流的指针(采样板专属)
 		int16_t TargetCurrent;    //!<目标电流值
 		int16_t RealPosition;	    //!<真实位置(编码器)
 		int16_t TargetPosition;	  //!<目标位置
@@ -131,9 +132,7 @@ class motor:public manager//!普通电机类型
 					uint16_t _can_id,
 					Motor_t *motor_type,
 					pid* _PID_In,
-					pid* _PID_Out=NULL,
-					pid* _PID_Current=NULL,
-					int16_t *CurrentSource=NULL);//!<构造方式之一，只提供速度环pid
+					pid* _PID_Out=NULL);//!<构造方式之一，只提供速度环pid
 		void Speed_Set(int16_t);    //!<设定速度，其实可以直接设定TargetSpeed
 		void Angle_Set(float);   //!<设定位置，其实可以直接设定TargetPosition
 		virtual int8_t Enable_Block(uint16_t Limit,uint16_t time,uint16_t err_num);//!<到时候写完 注意负数 被坑了
@@ -141,7 +140,6 @@ class motor:public manager//!普通电机类型
 	protected:
 		class pid* PID_In;          //!<PID内环
 		class pid* PID_Out;         //!<PID外环
-		class pid* PID_Current;     //!<PID电流环
 		int16_t LastPosition;       //!<上次位置
 		int16_t LastSpeed;          //!<上次速度
 
@@ -149,9 +147,7 @@ class motor:public manager//!普通电机类型
 		virtual void Handle(void);           //!<数据处理函数，用于判断状态，运行PID
 		virtual void Position_Run(void);     //!<使用位置环确定速度 为PID运算环节
 		virtual void Speed_Run(void);        //!<使用速度环确定电流 为PID运算环节
-		virtual void Current_Run(void);      //!<使用电流环确定转矩 为PID运算环节
 		virtual void InsertCurrent(void);    //!<将运算好的电流按列表储存进发送缓存区内
-		///@TODO:记得电流运行时除了判断0还要看是不是停止位 以防停止不了
 };
 /** 
     * @brief 软路程电机 \n
@@ -159,6 +155,7 @@ class motor:public manager//!普通电机类型
     */
 class	softmotor:public motor
 {
+	friend class chassis;//声明底盘类型为电机的友元类，让底盘能够访问电机的私有成员
 	public:
 		int32_t Soft_RealPosition=0;//!<软真实路程，这里实际意义是轮子转过的圈数
 		int32_t Soft_TargetPosition;//!<软目标路程，实际意义为轮子要转的圈数
@@ -168,10 +165,8 @@ class	softmotor:public motor
 							uint16_t _can_id,
 							Motor_t *motor_type,
 							pid* PID_In,
-							pid* PID_Out=NULL,
-							pid* PID_Current=NULL,
-							int16_t *CurrentSource=NULL)
-							:motor(can_num, _can_id, motor_type, PID_In, PID_Out, PID_Current, CurrentSource){}//!<构造函数
+							pid* PID_Out=NULL)
+							:motor(can_num, _can_id, motor_type, PID_In, PID_Out){}//!<构造函数
 		void Limit(float _max,float _min);//!<设置软件限位
 		void Angle_Set(float);//!<设置路程目标角度
 		virtual int8_t Enable_Block(uint16_t Limit,uint16_t time,uint16_t err_num);//!<到时候写完 注意负数 被坑了
@@ -274,26 +269,34 @@ class softcloud : public cloud///软路程云台类 for 6020
 		float min=-99999999999;//!<角度最小值
 		
 };
-class chassis//!扩展:底盘类型
+/** 
+* @brief  底盘的控制类型，带功率控制
+* @par 日志 
+*   2019年3月9日16:43:30 WMD 因为需要在速度环和电流环之间插入功率限制调整函数，经过考虑重新修改了一下框架，将电流环嵌入底盘类型，而普通电机类型不涉及电流环
+*/
+class chassis
 {
 	public:
-		pid *Turn_PID;  //!转弯PID
+		static chassis* point;//!<指向当前已声明的底盘，一个工程只允许一个底盘的存在  该指针用于日后托管处理
+		pid *Turn_PID;  //!<转弯PID
 		void Run(void); //!<缺省参数 以上次的模式控制底盘
 		void Run(float Vx, float Vy, float Omega);//!<以速度控制底盘
 		void Safe(void);     //!停止底盘
 		softmotor *Motor[4]; //!<四个轮子的电机对象
-		chassis(uint8_t can_num,
-							uint16_t First_can_id,
-							Motor_t *motor_type,
-							pid *speed_pid,
-							pid *turnpid,
-							pid *current_pid=NULL,
+		chassis(uint8_t can_num, 
+							uint16_t First_can_id, 
+							Motor_t *motor_type, 
+							pid *speed_pid, 
+							pid* turnpid=NULL, 
+							pid *current_pid=NULL, 
 							int16_t *CurrentSource=NULL);//!<直接控制底盘的构造函数
+		void Handle(void);//!<交由CANSend托管的底盘处理函数
 	private:
-		uint8_t run_state=0;//当前电机状态
-		pid *Pid_spe[4];//指向四个电机速度环pid的指针
-		pid *Pid_current[4];//指向四个电机电流环pid的指针
-		float Last_Vx=0, Last_Vy=0, Last_Omega=0;//之前的值，用于缺省参数时的使用
+		RunState_t RunState;//!<当前底盘状态
+		pid *Pid_spe[4];//!<指向四个电机速度环pid的指针
+		pid *Pid_current[4];//!<指向四个电机电流环pid的指针
+		int16_t *CurrentSource[4];//!<指向电流真实数据源
+		float Last_Vx=0, Last_Vy=0, Last_Omega=0;//!<之前的值，用于缺省参数时的使用
 }; 
 class chassiscontrol//底盘控制类for云台
 {
