@@ -12,6 +12,9 @@
 #include "My_SMDLED.h"
 #include "define_all.h"
 #include "string.h"
+#include "can.h"
+#include "Can_Driver.hpp"
+#include "Global_Variable.h"
 #include <stdlib.h>
 
 extern int8_t RGB_Start_index[5][5];//声明于My)SMDLED.c，切换模式时清零防止不同模式间干扰
@@ -27,9 +30,8 @@ TickType_t LastShootTick;
 #endif
 #ifndef AUXILIARY//主控
 	uint8_t hit[17] = {0};
-#endif
+	uint8_t auxiliary_finished_flag = 0;//副控完成打符成功灯效标志，1为已完成，在can回调函数中更新
 
-#ifndef AUXILIARY//主控
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)//装甲板受到打击回调函数
 {
 	switch(GPIO_Pin)
@@ -130,12 +132,15 @@ void buff_reset(void)//大符初始化
 	clear_with_purity_color(0);//整个大符清屏
 	#ifndef AUXILIARY//主控
 		hit[0] = 1;//开启第一个臂
+		auxiliary_finished_flag = 0;//副控成功打符灯效完成标志清零
 	#endif
 	arm_flash = 0x00;
 	arm_flashed = 0x00;
 	last_arm_flash = 0x00;
 	#ifdef AUXILIARY
 		flag_auxiliary = 0;//副控专属，首次进入打符成功灯效模式标志
+		can_buffer[0] = 1;
+		can_send_msg(&hcan1, 0x222, can_buffer);//给主控发信息
 	#endif
 }
 
@@ -164,7 +169,7 @@ void buff_new_armnum_produce(void)//设置需要刷新的臂
 void buff_flash(void)//大符刷新函数，线程中周期调用
 {
 	#ifndef AUXILIARY//主控
-		if(hit[arm_flash])//正确装甲板被击打
+		if(arm_flash!=0xff && hit[arm_flash])//正确装甲板被击打
 		{
 			buff_new_armnum_produce();//设置需要刷新的臂
 			memset(hit, 0, 17);//装甲板击打数据清零
@@ -176,13 +181,17 @@ void buff_flash(void)//大符刷新函数，线程中周期调用
 			if(flag_auxiliary == 0)//判断是否为首次进行成功打符灯效判断是否要进行index清零,准备成功打符灯效
 				memset(RGB_Start_index, 0x00, sizeof(RGB_Start_index));
 			flag_auxiliary = 1;//下次便不需要进行start_index清零
-		#endif
-		if(buff_sucess_process_var() == 0)//进度条完成，大符初始化
-			buff_reset();
+			if(buff_sucess_process_var() == 0)//副控进度条完成，大符初始化
+				buff_reset();
+		#else //主控
+		if(buff_sucess_process_var() == 0)//主控进度条完成，等待副控完成
+			if(auxiliary_finished_flag == 1)//副控进度条完成，大符初始化
+				buff_reset();
+			#endif
 	}else
 	{
-		buff_conveyer_belt();
-		buff_all_on();
+		buff_conveyer_belt();//根据标志位选择臂进行传送带灯效显示
+		buff_all_on();//根据标志位选择臂进行全亮显示
 	}
 	SMD_LED_PWM_Init();
 }

@@ -120,6 +120,7 @@
         <SetRegEntry>
           <Number>0</Number>
           <Key>DLGUARM</Key>
+          <Name>Hs??鈝Hs??鈝Hs?</Name>
         </SetRegEntry>
         <SetRegEntry>
           <Number>0</Number>
@@ -210,6 +211,16 @@
           <count>8</count>
           <WinNumber>2</WinNumber>
           <ItemText>hit</ItemText>
+        </Ww>
+        <Ww>
+          <count>9</count>
+          <WinNumber>2</WinNumber>
+          <ItemText>auxiliary_finished_flag</ItemText>
+        </Ww>
+        <Ww>
+          <count>10</count>
+          <WinNumber>2</WinNumber>
+          <ItemText>data</ItemText>
         </Ww>
       </WatchWindow2>
       <MemoryWindow1>

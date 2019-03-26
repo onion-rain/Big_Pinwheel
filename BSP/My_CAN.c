@@ -17,23 +17,25 @@
 
 CAN_RxHeaderTypeDef RxHead;
 extern uint8_t arm_flash, last_arm_flash, arm_flashed;
+extern uint8_t auxiliary_finished_flag;
 
 static uint8_t data[8];//接收数据缓冲区
 
 void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan)
 {
 	HAL_CAN_GetRxMessage(hcan,CAN_RX_FIFO0,&RxHead,data);
+	#ifndef AUXILIARY
+		if(RxHead.StdId == 0x222)//
+			auxiliary_finished_flag = data[1];
+	#else
 	if(RxHead.StdId == 0x111)//
 	{
-		#ifdef AUXILIARY
 		RC_Ctl.rc.s1 = (data[0]<<8 | data[1])/10;
 		RC_Ctl.rc.s2 = (data[0]<<8 | data[1])%10;
 		arm_flash = data[2];
 		last_arm_flash = data[3];
 		arm_flashed = data[4];
-		#endif
 	}
-	#ifdef AUXILIARY
 	else
 		manager::CANUpdate(hcan,&RxHead,data);
 	#endif
