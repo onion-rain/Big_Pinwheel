@@ -141,11 +141,6 @@ void buff_reset(void)//大符初始化
 	arm_flash = 0x00;
 	arm_flashed = 0x00;
 	last_arm_flash = 0x00;
-	#ifdef AUXILIARY
-		flag_auxiliary = 0;//副控专属，首次进入打符成功灯效模式标志
-		can_buffer[0] = 1;
-		can_send_msg(&hcan1, 0x222, can_buffer);//给主控发信息
-	#endif
 }
 
 void buff_flag_sucess(void)//打符成功标志位处理
@@ -154,7 +149,7 @@ void buff_flag_sucess(void)//打符成功标志位处理
 	arm_flashed = 0xff;
 	last_arm_flash = 0xff;
 }
-
+#ifndef AUXILIARY//主控
 void buff_new_armnum_produce(void)//设置需要刷新的臂
 {
 	if(arm_flashed == 0x1f)/*已全部被刷新过*/
@@ -169,7 +164,7 @@ void buff_new_armnum_produce(void)//设置需要刷新的臂
 		arm_flashed |= arm_flash;//更新已被刷新过的臂
 	}
 }
-
+#endif
 void buff_flash(void)//大符刷新函数，线程中周期调用
 {
 	#ifndef AUXILIARY//主控
@@ -185,8 +180,13 @@ void buff_flash(void)//大符刷新函数，线程中周期调用
 			if(flag_auxiliary == 0)//判断是否为首次进行成功打符灯效判断是否要进行index清零,准备成功打符灯效
 				memset(RGB_Start_index, 0x00, sizeof(RGB_Start_index));
 			flag_auxiliary = 1;//下次便不需要进行start_index清零
-			if(buff_sucess_process_var() == 0)//副控进度条完成，大符初始化
+			if(buff_sucess_process_var()==0 && flag_auxiliary<=3)//副控进度条完成并且首次进行初始化(副控前两次初始化向主控发送进度条完成的消息，之后不再发送)
+			{
 				buff_reset();
+				flag_auxiliary++;//副控专属，首次进入打符成功灯效模式标志
+				can_buffer[0] = 1;
+				can_send_msg(&hcan1, 0x222, can_buffer);//给主控发信息
+			}
 		#else //主控
 		if(buff_sucess_process_var() == 0)//主控进度条完成，等待副控完成
 			if(auxiliary_finished_flag == 1)//副控进度条完成，大符初始化
@@ -194,6 +194,9 @@ void buff_flash(void)//大符刷新函数，线程中周期调用
 			#endif
 	}else
 	{
+		#ifdef AUXILIARY//副控
+			flag_auxiliary = 0;
+		#endif
 		buff_conveyer_belt();//根据标志位选择臂进行传送带灯效显示
 		buff_all_on();//根据标志位选择臂进行全亮显示
 	}

@@ -14,7 +14,7 @@
 #include "stm32f4xx_hal.h"
 #include "cmsis_os.h"
 
-extern uint8_t arm_flash, last_arm_flash;
+extern uint8_t arm_flash, last_arm_flash, arm_flashed;
 #ifndef AUXILIARY
 	extern uint8_t hit[17];//声明于My_Car.h，记录五个装甲板的打击次数
 #endif

@@ -26,12 +26,6 @@ void MainTask(void const * argument)
 	{
 		TimerTicks = xTaskGetTickCount();//获得当前系统心跳
 		Remote_Handle();//遥控器句柄
-		#ifndef AUXILIARY
-			can_buffer[0] = RC_Ctl.rc.s1*10+RC_Ctl.rc.s2;
-			can_buffer[1] = arm_flash<<8 | last_arm_flash;
-			can_buffer[2] = arm_flashed<<8;
-			can_send_msg(&hcan1, 0x111, can_buffer);//给副控发信息
-		#endif
 		osDelay(1);
 	}
 }
