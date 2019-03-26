@@ -211,7 +211,7 @@ static void run(uint8_t type)
 			break;
 		case RUNNING:
 			#ifndef AUXILIARY//Ö÷¿Ø
-				if(HAL_GetTick()-LastShootTick>1000 && last_arm_flash!=0x00)//´ò·ûÊ§°Ü
+				if(HAL_GetTick()-LastShootTick>2000 && last_arm_flash!=0x00)//´ò·ûÊ§°Ü
 				{
 					RC_Ctl.rc.s1 = 0;
 					RC_Ctl.rc.s2 = 0;
