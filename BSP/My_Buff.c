@@ -21,18 +21,66 @@ static uint8_t return_data = 0;//debug专属
 uint8_t arm_flash = 0x00;//can_buffer[1]后8位，模式，每一位代表一个臂，1代表当前臂需要刷新，0表示保持现状，全0表示全灭
 uint8_t last_arm_flash = 0x00;//上次遍历过的臂
 uint8_t arm_flashed = 0x00;//已刷新过的臂
-#ifdef AUXILIARY
+TickType_t LastShootTick;
+#ifdef AUXILIARY//副控
 	uint8_t flag_auxiliary = 0;//副控专属，首次进入打符成功灯效模式标志
 #endif
+#ifndef AUXILIARY//主控
+	uint8_t hit[17] = {0};
+#endif
 
-void clear_with_purity_color(uint8_t color)
+#ifndef AUXILIARY//主控
+void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)//装甲板受到打击回调函数
+{
+	switch(GPIO_Pin)
+	{
+		case GPIO_PIN_6:
+			if(HAL_GetTick()-LastShootTick > 100)
+			{
+				hit[0x10]++;
+				LastShootTick = HAL_GetTick();
+			}
+			break;
+		case GPIO_PIN_15:
+			if(HAL_GetTick()-LastShootTick > 100)
+			{
+				hit[0x08]++;
+				LastShootTick = HAL_GetTick();
+			}
+			break;
+		case GPIO_PIN_14:
+			if(HAL_GetTick()-LastShootTick > 100)
+			{
+				hit[0x04]++;
+				LastShootTick = HAL_GetTick();
+			}
+			break;
+		case GPIO_PIN_13:
+			if(HAL_GetTick()-LastShootTick > 100)
+			{
+				hit[0x02]++;
+				LastShootTick = HAL_GetTick();
+			}
+			break;
+		case GPIO_PIN_12:
+			if(HAL_GetTick()-LastShootTick > 100)
+			{
+				hit[0x01]++;
+				LastShootTick = HAL_GetTick();
+			}
+			break;
+	}
+}
+#endif
+
+void clear_with_purity_color(uint8_t color)//以纯色填充
 {
 	SMD_LED_Running_Water_Effect_Configuration(0, ALL_ON, 0, color);
 	SMD_LED_Running_Water_Effect_Configuration(1, ALL_ON, 0, color);
 	SMD_LED_Running_Water_Effect_Configuration(2, ALL_ON, 0, color);
 }
 
-void buff_conveyer_belt(void)
+void buff_conveyer_belt(void)//大符灯效
 {
 	#ifndef AUXILIARY//主控
 	if((arm_flash>>0)&0x01)//判断是否刷新传送带
@@ -51,7 +99,7 @@ void buff_conveyer_belt(void)
 	#endif
 }
 
-void buff_all_on(void)
+void buff_all_on(void)//判断哪些臂已完成击打，设置为全亮
 {
 	#ifndef AUXILIARY//主控
 		if((last_arm_flash>>0)&0x01)//判断是否刷新全亮
@@ -70,15 +118,19 @@ void buff_all_on(void)
 	#endif
 }
 
-uint8_t buff_sucess_process_var(void)
+uint8_t buff_sucess_process_var(void)//大符全部击打成功灯效
 {
 	SMD_LED_Running_Water_Effect_Configuration(0, PROGRESS_BAR_1, 4, BLUE);
 	SMD_LED_Running_Water_Effect_Configuration(1, PROGRESS_BAR_1, 4, BLUE);
 	return SMD_LED_Running_Water_Effect_Configuration(2, PROGRESS_BAR_1, 4, BLUE);
 }
 
-void buff_flag_reset(void)
+void buff_reset(void)//大符初始化
 {
+	clear_with_purity_color(0);//整个大符清屏
+	#ifndef AUXILIARY//主控
+		hit[0] = 1;//开启第一个臂
+	#endif
 	arm_flash = 0x00;
 	arm_flashed = 0x00;
 	last_arm_flash = 0x00;
@@ -87,48 +139,20 @@ void buff_flag_reset(void)
 	#endif
 }
 
-void buff_flag_sucess(void)
+void buff_flag_sucess(void)//打符成功标志位处理
 {
 	arm_flash = 0xff;
 	arm_flashed = 0xff;
 	last_arm_flash = 0xff;
 }
 
-void buff_flash(void)
-{
-	if(arm_flashed == 0xff && arm_flash == 0xff && last_arm_flash == 0xff)//打符成功灯效
-	{
-		#ifdef AUXILIARY//副控
-			if(flag_auxiliary == 0)
-				memset(RGB_Start_index, 0x00, sizeof(RGB_Start_index));
-			flag_auxiliary = 1;
-		#endif
-		if(buff_sucess_process_var() == 0)//进度条完成，大符初始化
-//			buff_flag_reset();
-		;
-	}
-//	else if(arm_flash == 0x00 && arm_flashed == 0x00 && last_arm_flash == 0x00)//成功打符灯效完成，清零指令
-//	{
-//		memset(RGB_Start_index, 0x00, sizeof(RGB_Start_index));
-//	}
-	else
-	{
-		buff_conveyer_belt();
-		buff_all_on();
-	}
-	SMD_LED_PWM_Init();
-}
-
-void buff_new_armnum_produce(void)
+void buff_new_armnum_produce(void)//设置需要刷新的臂
 {
 	if(arm_flashed == 0x1f)/*已全部被刷新过*/
 	{
-		memset(RGB_Start_index, 0x00, sizeof(RGB_Start_index));
+		memset(RGB_Start_index, 0x00, sizeof(RGB_Start_index));//起始index清零，准备成功打符灯效，副控使用标志flag_auxiliary判断是否为首次进行成功打符灯效判断是否要进行index清零
 		buff_flag_sucess();
-	}else if(arm_flashed == 0xff && arm_flash == 0xff && last_arm_flash == 0xff)/*正在等待成功打符灯效完成*/
-	{
-		
-	}else
+	}else//还有未被刷新的臂
 	{
 		last_arm_flash = arm_flash;//保存上次更新的臂标号
 		do arm_flash = 0x01<<rand()%5;//随机生成下一个目标臂标号
@@ -136,3 +160,30 @@ void buff_new_armnum_produce(void)
 		arm_flashed |= arm_flash;//更新已被刷新过的臂
 	}
 }
+
+void buff_flash(void)//大符刷新函数，线程中周期调用
+{
+	#ifndef AUXILIARY//主控
+		if(hit[arm_flash])//正确装甲板被击打
+		{
+			buff_new_armnum_produce();//设置需要刷新的臂
+			memset(hit, 0, 17);//装甲板击打数据清零
+		}
+	#endif
+	if(arm_flashed == 0xff && arm_flash == 0xff && last_arm_flash == 0xff)//打符成功
+	{
+		#ifdef AUXILIARY//副控
+			if(flag_auxiliary == 0)//判断是否为首次进行成功打符灯效判断是否要进行index清零,准备成功打符灯效
+				memset(RGB_Start_index, 0x00, sizeof(RGB_Start_index));
+			flag_auxiliary = 1;//下次便不需要进行start_index清零
+		#endif
+		if(buff_sucess_process_var() == 0)//进度条完成，大符初始化
+			buff_reset();
+	}else
+	{
+		buff_conveyer_belt();
+		buff_all_on();
+	}
+	SMD_LED_PWM_Init();
+}
+
