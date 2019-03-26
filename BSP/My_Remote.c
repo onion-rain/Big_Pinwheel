@@ -210,13 +210,20 @@ static void run(uint8_t type)
 			#endif
 			break;
 		case RUNNING:
+			#ifndef AUXILIARY//主控
+				if(HAL_GetTick()-LastShootTick>1000 && last_arm_flash!=0x00)//打符失败
+				{
+					RC_Ctl.rc.s1 = 0;
+					RC_Ctl.rc.s2 = 0;
+					LastShootTick = HAL_GetTick();
+				}else
+			#endif
 			if(HAL_GetTick()%80 == 0)
 				buff_flash();//大符刷新
 			break;
 		case ENDING:
 			buff_reset();
 			memset(RGB_Start_index, 0x00, sizeof(RGB_Start_index));
-			clear_with_purity_color(0);
 			SMD_LED_PWM_Init();
 			break;
 	}

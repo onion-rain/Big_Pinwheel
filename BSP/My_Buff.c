@@ -17,6 +17,8 @@
 #include "Global_Variable.h"
 #include <stdlib.h>
 
+#define BUFF_COLOR RED
+
 extern int8_t RGB_Start_index[5][5];//声明于My)SMDLED.c，切换模式时清零防止不同模式间干扰
 extern uint8_t RGB_Tail_num[5][5];//声明于My)SMDLED.c，切换模式时清零防止不同模式间干扰
 
@@ -25,9 +27,11 @@ uint8_t arm_flash = 0x00;//can_buffer[1]后8位，模式，每一位代表一个臂，1代表当前
 uint8_t last_arm_flash = 0x00;//上次遍历过的臂
 uint8_t arm_flashed = 0x00;//已刷新过的臂
 TickType_t LastShootTick;
+
 #ifdef AUXILIARY//副控
 	uint8_t flag_auxiliary = 0;//副控专属，首次进入打符成功灯效模式标志
 #endif
+
 #ifndef AUXILIARY//主控
 	uint8_t hit[17] = {0};
 	uint8_t auxiliary_finished_flag = 0;//副控完成打符成功灯效标志，1为已完成，在can回调函数中更新
@@ -86,18 +90,18 @@ void buff_conveyer_belt(void)//大符灯效
 {
 	#ifndef AUXILIARY//主控
 	if((arm_flash>>0)&0x01)//判断是否刷新传送带
-			return_data = SMD_LED_Running_Water_Effect_Configuration(0, CONVEYER_BELT, 3, BLUE);
+			return_data = SMD_LED_Running_Water_Effect_Configuration(0, CONVEYER_BELT, 3, BUFF_COLOR);
 		if((arm_flash>>1)&0x01)
-			return_data = SMD_LED_Running_Water_Effect_Configuration(1, CONVEYER_BELT, 3, BLUE);
+			return_data = SMD_LED_Running_Water_Effect_Configuration(1, CONVEYER_BELT, 3, BUFF_COLOR);
 		if((arm_flash>>2)&0x01)
-			return_data = SMD_LED_Running_Water_Effect_Configuration(2, CONVEYER_BELT, 3, BLUE);
+			return_data = SMD_LED_Running_Water_Effect_Configuration(2, CONVEYER_BELT, 3, BUFF_COLOR);
 	#else//副控
 		if((arm_flash>>3)&0x01)//判断是否刷新传送带
-			return_data = SMD_LED_Running_Water_Effect_Configuration(0, CONVEYER_BELT, 3, BLUE);
+			return_data = SMD_LED_Running_Water_Effect_Configuration(0, CONVEYER_BELT, 3, BUFF_COLOR);
 		if((arm_flash>>4)&0x01)
-			return_data = SMD_LED_Running_Water_Effect_Configuration(1, CONVEYER_BELT, 3, BLUE);
+			return_data = SMD_LED_Running_Water_Effect_Configuration(1, CONVEYER_BELT, 3, BUFF_COLOR);
 		if((arm_flash>>5)&0x01)
-			return_data = SMD_LED_Running_Water_Effect_Configuration(2, CONVEYER_BELT, 3, BLUE);
+			return_data = SMD_LED_Running_Water_Effect_Configuration(2, CONVEYER_BELT, 3, BUFF_COLOR);
 	#endif
 }
 
@@ -105,26 +109,26 @@ void buff_all_on(void)//判断哪些臂已完成击打，设置为全亮
 {
 	#ifndef AUXILIARY//主控
 		if((last_arm_flash>>0)&0x01)//判断是否刷新全亮
-			return_data = SMD_LED_Running_Water_Effect_Configuration(0, ALL_ON, 0, BLUE);
+			return_data = SMD_LED_Running_Water_Effect_Configuration(0, ALL_ON, 0, BUFF_COLOR);
 		if((last_arm_flash>>1)&0x01)
-			return_data = SMD_LED_Running_Water_Effect_Configuration(1, ALL_ON, 0, BLUE);
+			return_data = SMD_LED_Running_Water_Effect_Configuration(1, ALL_ON, 0, BUFF_COLOR);
 		if((last_arm_flash>>2)&0x01)
-			return_data = SMD_LED_Running_Water_Effect_Configuration(2, ALL_ON, 0, BLUE);
+			return_data = SMD_LED_Running_Water_Effect_Configuration(2, ALL_ON, 0, BUFF_COLOR);
 	#else//副控
 		if((last_arm_flash>>3)&0x01)//判断是否刷新全亮
-			return_data = SMD_LED_Running_Water_Effect_Configuration(0, ALL_ON, 0, BLUE);
+			return_data = SMD_LED_Running_Water_Effect_Configuration(0, ALL_ON, 0, BUFF_COLOR);
 		if((last_arm_flash>>4)&0x01)
-			return_data = SMD_LED_Running_Water_Effect_Configuration(1, ALL_ON, 0, BLUE);
+			return_data = SMD_LED_Running_Water_Effect_Configuration(1, ALL_ON, 0, BUFF_COLOR);
 		if((last_arm_flash>>5)&0x01)
-			return_data = SMD_LED_Running_Water_Effect_Configuration(2, ALL_ON, 0, BLUE);
+			return_data = SMD_LED_Running_Water_Effect_Configuration(2, ALL_ON, 0, BUFF_COLOR);
 	#endif
 }
 
 uint8_t buff_sucess_process_var(void)//大符全部击打成功灯效
 {
-	SMD_LED_Running_Water_Effect_Configuration(0, PROGRESS_BAR_1, 4, BLUE);
-	SMD_LED_Running_Water_Effect_Configuration(1, PROGRESS_BAR_1, 4, BLUE);
-	return SMD_LED_Running_Water_Effect_Configuration(2, PROGRESS_BAR_1, 4, BLUE);
+	SMD_LED_Running_Water_Effect_Configuration(0, PROGRESS_BAR_1, 4, BUFF_COLOR);
+	SMD_LED_Running_Water_Effect_Configuration(1, PROGRESS_BAR_1, 4, BUFF_COLOR);
+	return SMD_LED_Running_Water_Effect_Configuration(2, PROGRESS_BAR_1, 4, BUFF_COLOR);
 }
 
 void buff_reset(void)//大符初始化
