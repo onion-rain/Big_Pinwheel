@@ -742,6 +742,11 @@
               <FilePath>..\Tasks\Main_Task.c</FilePath>
             </File>
             <File>
+              <FileName>Monitor_Task.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Tasks\Monitor_Task.c</FilePath>
+            </File>
+            <File>
               <FileName>Other_Tasks.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\Tasks\Other_Tasks.c</FilePath>

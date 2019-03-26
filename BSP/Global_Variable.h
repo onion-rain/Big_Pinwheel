@@ -14,7 +14,8 @@
 #include "stm32f4xx_hal.h"
 #include "cmsis_os.h"
 
-extern TickType_t TimerTicks;
+extern TickType_t TimerTicks, DbusTick;//系统心跳,在主线程中更新
+extern uint8_t DbusOutofContact;//各系统失恋标志位,默认全部失恋
 extern uint32_t Pinwheel_angle_set;//大符电机角度设定
 extern uint32_t Pinwheel_speed_set;//大符电机速度设定
 

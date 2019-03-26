@@ -98,7 +98,7 @@ void buff_flash(void)
 {
 	if(arm_flashed == 0xff && arm_flash == 0xff && last_arm_flash == 0xff)//打符成功灯效
 	{
-		#ifdef AUXILIARY
+		#ifdef AUXILIARY//副控
 			if(flag_auxiliary == 0)
 				memset(RGB_Start_index, 0x00, sizeof(RGB_Start_index));
 			flag_auxiliary = 1;
@@ -106,11 +106,12 @@ void buff_flash(void)
 		if(buff_sucess_process_var() == 0)//进度条完成，大符初始化
 //			buff_flag_reset();
 		;
-	}/*
-	else if(arm_flash == 0x00 && arm_flashed == 0x00 && last_arm_flash == 0x00)//成功打符灯效完成，清零指令
-	{
-		memset(RGB_Start_index, 0x00, sizeof(RGB_Start_index));
-	}*/else
+	}
+//	else if(arm_flash == 0x00 && arm_flashed == 0x00 && last_arm_flash == 0x00)//成功打符灯效完成，清零指令
+//	{
+//		memset(RGB_Start_index, 0x00, sizeof(RGB_Start_index));
+//	}
+	else
 	{
 		buff_conveyer_belt();
 		buff_all_on();

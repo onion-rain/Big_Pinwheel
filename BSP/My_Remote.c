@@ -34,26 +34,26 @@ extern uint8_t RGB_Tail_num[5][5];//ÉùÃ÷ÓÚMy)SMDLED.c£¬ÇÐ»»Ä£Ê½Ê±ÇåÁã·ÀÖ¹²»Í¬Ä£Ê
 
 static uint8_t return_data = 0;//debug×¨Êô
 
-//static void Rand_Purity_Color(uint8_t type)
-//{
-//	switch(type)
-//	{
-//		case STARTING:
-//			return_data = SMD_LED_Running_Water_Effect_Configuration(0, ALL_ON, 0, rand()%6+1);
-//			return_data = SMD_LED_Running_Water_Effect_Configuration(1, ALL_ON, 0, rand()%6+1);
-//			return_data = SMD_LED_Running_Water_Effect_Configuration(2, ALL_ON, 0, rand()%6+1);
-//			SMD_LED_PWM_Init();
-//			break;
-//		case RUNNING:
-//			break;
-//		case ENDING:
-//			return_data = SMD_LED_Running_Water_Effect_Configuration(0, ALL_ON, 0, 0);
-//			return_data = SMD_LED_Running_Water_Effect_Configuration(1, ALL_ON, 0, 0);
-//			return_data = SMD_LED_Running_Water_Effect_Configuration(2, ALL_ON, 0, 0);
-//			SMD_LED_PWM_Init();
-//			break;
-//	}
-//}
+static void Rand_Purity_Color(uint8_t type)
+{
+	switch(type)
+	{
+		case STARTING:
+			return_data = SMD_LED_Running_Water_Effect_Configuration(0, ALL_ON, 0, rand()%6+1);
+			return_data = SMD_LED_Running_Water_Effect_Configuration(1, ALL_ON, 0, rand()%6+1);
+			return_data = SMD_LED_Running_Water_Effect_Configuration(2, ALL_ON, 0, rand()%6+1);
+			SMD_LED_PWM_Init();
+			break;
+		case RUNNING:
+			break;
+		case ENDING:
+			return_data = SMD_LED_Running_Water_Effect_Configuration(0, ALL_ON, 0, 0);
+			return_data = SMD_LED_Running_Water_Effect_Configuration(1, ALL_ON, 0, 0);
+			return_data = SMD_LED_Running_Water_Effect_Configuration(2, ALL_ON, 0, 0);
+			SMD_LED_PWM_Init();
+			break;
+	}
+}
 static void Rand_Color(uint8_t type)
 {
 	switch(type)
@@ -208,13 +208,12 @@ static void run(uint8_t type)
 	switch(type)
 	{
 		case STARTING:
-			#ifndef AUXILIARY
+			#ifndef AUXILIARY//Ö÷¿Ø
 				hit[0] = 1;//¿ªÆôµÚÒ»¸ö±Û
 			#endif
 			break;
 		case RUNNING:
-			#ifndef AUXILIARY
-//			if(HAL_GetTick()%3000 == 0)
+			#ifndef AUXILIARY//Ö÷¿Ø
 			if(hit[arm_flash])
 			{
 				buff_new_armnum_produce();//ÉèÖÃÐèÒªË¢ÐÂµÄ±Û
@@ -263,13 +262,13 @@ static void Remote_Distribute(uint8_t mode, uint8_t type)
 		case 22:safe_mode(type);break;//°²È«Ä£Ê½
 		case 21:Rand_Color(type);break;	//Ëæ»úÉ«
 		case 13:Tetris(type);break;	//¶íÂÞË¹·½¿é
-//		case 33:Rand_Purity_Color(type);break;//Ëæ»ú´¿É«
 		case 33:Conveyer_Belt(type);break;//´«ËÍ´ø
 		case 12:Sliding_Window(type);break;//»¬¶¯´°¿Ú
-		case 32:run(type);break;//´ó·ûÔËÐÐÄ£Ê½
-		case 11:Progress_Bar_0(type);break;//½»²æ½ø¶ÈÌõ
+		case 32:Progress_Bar_0(type);break;//½»²æ½ø¶ÈÌõ
+		case 11:Rand_Purity_Color(type);break;//Ëæ»ú´¿É«
 		case 31:Progress_Bar_1(type);break;//Í¬Ïò½ø¶ÈÌõ
 		case 23:Progress_Bar_2(type);break;//µÎË®½ø¶ÈÌõ
+		case 44:run(type);break;//´ó·ûÔËÐÐÄ£Ê½
 		default:break;
 	}
 	manager::CANSend();

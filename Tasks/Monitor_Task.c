@@ -12,7 +12,7 @@
 #include "Monitor_Task.h"
 #include "Global_Variable.h"
 #include "music.h"
-#include "My_RGB.h"
+#include "Dbus_Uart.h"
 #include "My_Car.hpp"
 
 static TickType_t MonitorTick;
@@ -40,63 +40,13 @@ void MonitorTask(void const * argument)
 //    */
 		MonitorTick = xTaskGetTickCount();//获取当前时刻
 		/*DBUS失联检测*/
-		if(Connection_monitor(DbusTick,50))//&& ChassisMode != SAFE_MODE)
+		if(Connection_monitor(DbusTick,50))
 		{
 			DbusOutofContact = 1;
-			Music_Play(warning);
-			RGB_Rand();
-		}
-//		/*摩擦轮编码器失联检测*/
-//		else if(Connection_monitor(Friction_l.LastUpdateTime,25))// || Connection_monitor(Friction_r.LastUpdateTime,25))
-//		{
-//			FrictionEncoderOutofContact = 1;
-//			Music_Play(warning);
-//			RGB_Rand();
-//		}
-		/*电机失联检测*/
-		else if(~(manager::CAN1_OnlineID | 0xffffff8f))//有电机不在线
-		{
-			Music_Play(warning);
-			RGB_Rand();
-		}
-		/*凋敝陀螺仪失联检测*/
-		else if(Connection_monitor(GyroTick,200))
-		{
-			GyroOutofContact = 1;
-			RGB_Rand();
-//	    Music_Play(Little_star);
-	    Music_Play(warning);
-		}
-//		/*裁判系统失联检测*/
-//		else if(Connection_monitor(JudgementTick,50))
-//		{ 
-//			JudgementOutofContact = 1;
-//			RGB_Rand();
-//		}
-//		/*视觉串口失联检测*/
-//		else if(Connection_monitor(VisionTick,1500))
-//		{
-//			VisionOutofContact = 1;
-//			RGB_Rand();
-//		}
-//		else if((hcan1.Instance->IER==0 || hcan2.Instance->IER == 0))//can中断使能失败
-//		{
-//			osThreadTerminate(MainTaskHandle);//删除主任务
-//			can_send_msg(&hcan1,0x200,0);
-//			can_send_msg(&hcan1,0x1ff,0);
-//			can_send_msg(&hcan2,0x200,0);
-//			can_send_msg(&hcan2,0x1ff,0);
-//			RGB_Rand();
-//		}
-		else
-		{
-			RGB_Gradational();//一切正常
+			RC_Ctl.rc.s1 = 4;
+			RC_Ctl.rc.s2 = 4;
+		}else
 			DbusOutofContact = 0;
-//			FrictionEncoderOutofContact = 0;
-			GyroOutofContact = 0;
-			JudgementOutofContact = 0;
-			VisionOutofContact = 0;
-		}
 		osDelay(10);
 	}
 }

@@ -13,7 +13,8 @@
 #include "usart.h"
 #include "define_all.h"
 
-TickType_t TimerTicks;//系统心跳,在主线程中更新
+TickType_t DbusTick, TimerTicks;//系统心跳,在主线程中更新
+uint8_t DbusOutofContact = 1;//各系统失恋标志位,默认全部失恋
 uint32_t Pinwheel_angle_set;//大符电机角度设定
 uint32_t Pinwheel_speed_set;//大符电机速度设定
 

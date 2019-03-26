@@ -35,7 +35,7 @@ typedef enum{
 
 //决定使用多少个CAN
 #define USE_CAN1
-#define USE_CAN2
+//#define USE_CAN2
 
 //定义底盘功率限制
 #define LIMIT_P (80)

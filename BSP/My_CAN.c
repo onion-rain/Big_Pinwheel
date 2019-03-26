@@ -33,7 +33,7 @@ void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan)
 		arm_flashed = data[4];
 		#endif
 	}
-	#ifndef AUXILIARY
+	#ifdef AUXILIARY
 	else
 		manager::CANUpdate(hcan,&RxHead,data);
 	#endif

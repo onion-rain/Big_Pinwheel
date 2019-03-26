@@ -16,9 +16,10 @@
 #include "usart.h"
 
 TickType_t LastShootTick;
-
-#ifndef AUXILIARY
+#ifndef AUXILIARY//主控
 	uint8_t hit[17] = {0};
+#endif
+#ifdef AUXILIARY//副控
 	//电机参数设置
 	Motor_t DJI_Motor_3508(8192, 19);
 	//大符
@@ -34,7 +35,7 @@ TickType_t LastShootTick;
 */
 void MOTOR_Init_All(void)
 {
-	#ifndef AUXILIARY
+	#ifdef AUXILIARY//副控
 		manager::CANSelect(&hcan1,NULL);//选can
 //		Pinwheel.Enable_Block(4000, 200, 2);//大符电机启用堵转检测
 	#endif
@@ -44,7 +45,7 @@ void MOTOR_Init_All(void)
 	HAL_TIM_PWM_Start(ARM_TIM,ARM2_CHANNEL);
 }
 
-#ifndef AUXILIARY
+#ifndef AUXILIARY//主控
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 {
 	switch(GPIO_Pin)

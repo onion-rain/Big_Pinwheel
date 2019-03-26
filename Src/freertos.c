@@ -64,6 +64,7 @@
 #include "My_SMDLED.h"
 
 #include "Main_Task.h"
+#include "Monitor_Task.h"
 #include "Other_Tasks.h"
 /* USER CODE END Includes */
 
@@ -85,6 +86,7 @@
 /* Private variables ---------------------------------------------------------*/
 /* USER CODE BEGIN Variables */
 osThreadId MainTaskHandle;
+osThreadId MonitorTaskHandle;
 osThreadId MusicTaskHandle;
 osThreadId TestTaskHandle;
 /* USER CODE END Variables */
@@ -134,6 +136,11 @@ void MX_FREERTOS_Init(void) {
   /* add threads, ... */
 	osThreadDef(MainTask, MainTask, osPriorityRealtime, 0, 128);
   MainTaskHandle = osThreadCreate(osThread(MainTask), NULL);
+	
+	#ifndef AUXILIARY//Ö÷¿Ø
+		osThreadDef(MonitorTask, MonitorTask, osPriorityNormal, 0, 32);
+		MonitorTaskHandle = osThreadCreate(osThread(MonitorTask), NULL);
+	#endif
 	
   osThreadDef(MusicTask, MusicTask, osPriorityNormal, 0, 32);
   MusicTaskHandle = osThreadCreate(osThread(MusicTask), NULL);

@@ -27,21 +27,24 @@ static void Dbus_Uart_Calculate(void)
 {
 	RC_Ctl.rc.ch0 = ((int16_t)DBUS_RX_Buffer[0] | ((int16_t)DBUS_RX_Buffer[1] << 8)) & 0x07FF;
 	RC_Ctl.rc.ch0-=1024;
-  RC_Ctl.rc.ch1 = (((int16_t)DBUS_RX_Buffer[1] >> 3) | ((int16_t)DBUS_RX_Buffer[2] << 5)) & 0x07FF;
+	RC_Ctl.rc.ch1 = (((int16_t)DBUS_RX_Buffer[1] >> 3) | ((int16_t)DBUS_RX_Buffer[2] << 5)) & 0x07FF;
 	RC_Ctl.rc.ch1-=1024;
-  RC_Ctl.rc.ch2 = (((int16_t)DBUS_RX_Buffer[2] >> 6) | ((int16_t)DBUS_RX_Buffer[3] << 2) | ((int16_t)DBUS_RX_Buffer[4] << 10)) & 0x07FF;
+	RC_Ctl.rc.ch2 = (((int16_t)DBUS_RX_Buffer[2] >> 6) | ((int16_t)DBUS_RX_Buffer[3] << 2) | ((int16_t)DBUS_RX_Buffer[4] << 10)) & 0x07FF;
 	RC_Ctl.rc.ch2-=1024;
-  RC_Ctl.rc.ch3 = (((int16_t)DBUS_RX_Buffer[4] >> 1) | ((int16_t)DBUS_RX_Buffer[5]<<7)) & 0x07FF;
-  RC_Ctl.rc.ch3-=1024;
-  RC_Ctl.rc.s1 = ((DBUS_RX_Buffer[5] >> 4) & 0x000C) >> 2;
-  RC_Ctl.rc.s2 = ((DBUS_RX_Buffer[5] >> 4) & 0x0003);
- 
+	RC_Ctl.rc.ch3 = (((int16_t)DBUS_RX_Buffer[4] >> 1) | ((int16_t)DBUS_RX_Buffer[5]<<7)) & 0x07FF;
+	RC_Ctl.rc.ch3-=1024;
+	RC_Ctl.rc.s1 = ((DBUS_RX_Buffer[5] >> 4) & 0x000C) >> 2;
+	RC_Ctl.rc.s2 = ((DBUS_RX_Buffer[5] >> 4) & 0x0003);
+
 	RC_Ctl.mouse.x = ((int16_t)DBUS_RX_Buffer[6]) | ((int16_t)DBUS_RX_Buffer[7] << 8);
-  RC_Ctl.mouse.y = ((int16_t)DBUS_RX_Buffer[8]) | ((int16_t)DBUS_RX_Buffer[9] << 8);
-  RC_Ctl.mouse.z = ((int16_t)DBUS_RX_Buffer[10]) | ((int16_t)DBUS_RX_Buffer[11] << 8);
-  RC_Ctl.mouse.press_l = DBUS_RX_Buffer[12];
-  RC_Ctl.mouse.press_r = DBUS_RX_Buffer[13];
-  RC_Ctl.key.v = ((int16_t)DBUS_RX_Buffer[14]);
+	RC_Ctl.mouse.y = ((int16_t)DBUS_RX_Buffer[8]) | ((int16_t)DBUS_RX_Buffer[9] << 8);
+	RC_Ctl.mouse.z = ((int16_t)DBUS_RX_Buffer[10]) | ((int16_t)DBUS_RX_Buffer[11] << 8);
+	RC_Ctl.mouse.press_l = DBUS_RX_Buffer[12];
+	RC_Ctl.mouse.press_r = DBUS_RX_Buffer[13];
+	RC_Ctl.key.v = ((int16_t)DBUS_RX_Buffer[14]);
+	
+	DbusTick = xTaskGetTickCount();
+	DbusOutofContact = 0;
 }
 
 void Dbus_Uart_IT(void)
