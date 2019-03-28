@@ -33,7 +33,8 @@ TickType_t LastShootTick;
 #endif
 
 #ifndef AUXILIARY//主控
-	uint8_t hit[17] = {0};
+	uint16_t Unprogrammable_Light_Bar = 0x0000;//不可编程的灯条
+	uint8_t hit[17] = {0};//记录五个装甲板的打击次数
 	uint8_t auxiliary_finished_flag = 0;//副控完成打符成功灯效标志，1为已完成，在can回调函数中更新
 
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)//装甲板受到打击回调函数
@@ -137,6 +138,7 @@ void buff_reset(void)//大符初始化
 	#ifndef AUXILIARY//主控
 		hit[0] = 1;//开启第一个臂
 		auxiliary_finished_flag = 0;//副控成功打符灯效完成标志清零
+		Unprogrammable_Light_Bar = 0x0000;//不可编程灯条清屏
 	#endif
 	arm_flash = 0x00;
 	arm_flashed = 0x00;
@@ -162,6 +164,7 @@ void buff_new_armnum_produce(void)//设置需要刷新的臂
 		do arm_flash = 0x01<<rand()%5;//随机生成下一个目标臂标号
 		while((arm_flash&arm_flashed) != 0x00);//目标臂已经被刷新过则重新生成
 		arm_flashed |= arm_flash;//更新已被刷新过的臂
+		Unprogrammable_Light_Bar |= arm_flash<<5;//此刻刷新的臂装甲板灯条亮
 	}
 }
 #endif
@@ -170,6 +173,7 @@ void buff_flash(void)//大符刷新函数，线程中周期调用
 	#ifndef AUXILIARY//主控
 		if(arm_flash!=0xff && hit[arm_flash])//正确装甲板被击打
 		{
+			Unprogrammable_Light_Bar |= arm_flash;//此刻arm_flash还未被刷新，被击打的臂臂灯条亮
 			buff_new_armnum_produce();//设置需要刷新的臂
 			memset(hit, 0, 17);//装甲板击打数据清零
 		}
