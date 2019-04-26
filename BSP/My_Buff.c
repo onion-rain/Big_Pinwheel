@@ -17,7 +17,7 @@
 #include "Global_Variable.h"
 #include <stdlib.h>
 
-#define BUFF_COLOR RED
+#define BUFF_COLOR BLUE
 
 extern int8_t RGB_Start_index[5][5];//声明于My)SMDLED.c，切换模式时清零防止不同模式间干扰
 extern uint8_t RGB_Tail_num[5][5];//声明于My)SMDLED.c，切换模式时清零防止不同模式间干扰

@@ -36,7 +36,7 @@
 /** 
   * @brief 大符主控or副控
 */
-//#define AUXILIARY
+#define AUXILIARY
 /** 
   * @brief pwm定时器通道定义
   * @refer My_Car.cpp
