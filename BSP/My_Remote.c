@@ -211,12 +211,12 @@ static void run(uint8_t type)
 			break;
 		case RUNNING:
 			#ifndef AUXILIARY//主控
-//				if(HAL_GetTick()-LastShootTick>2000 && last_arm_flash!=0x00)//打符失败
-//				{
-//					RC_Ctl.rc.s1 = 0;
-//					RC_Ctl.rc.s2 = 0;
-//					LastShootTick = HAL_GetTick();
-//				}else
+				if(HAL_GetTick()-LastShootTick>2500 && last_arm_flash!=0x00)//打符失败
+				{
+					RC_Ctl.rc.s1 = 0;
+					RC_Ctl.rc.s2 = 0;
+					LastShootTick = HAL_GetTick();
+				}else
 			#endif
 			if(HAL_GetTick()%80 == 0)
 				buff_flash();//大符刷新
