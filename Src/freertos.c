@@ -136,7 +136,7 @@ void MX_FREERTOS_Init(void) {
 	osThreadDef(MainTask, MainTask, osPriorityRealtime, 0, 128);
   MainTaskHandle = osThreadCreate(osThread(MainTask), NULL);
 	
-	#ifndef AUXILIARY//Ö÷¿Ø
+	#ifndef SECONDARY_CONTROL//Ö÷¿Ø
 		osThreadDef(MonitorTask, MonitorTask, osPriorityNormal, 0, 32);
 		MonitorTaskHandle = osThreadCreate(osThread(MonitorTask), NULL);
 	#endif

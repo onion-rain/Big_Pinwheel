@@ -15,7 +15,7 @@
 #include "Global_Variable.h"
 #include "usart.h"
 
-#ifdef AUXILIARY//副控
+#ifdef SECONDARY_CONTROL//副控
 	//电机参数设置
 	Motor_t DJI_Motor_3508(8192, 19);
 	//大符
@@ -31,7 +31,7 @@
 */
 void MOTOR_Init_All(void)
 {
-	#ifdef AUXILIARY//副控
+	#ifdef SECONDARY_CONTROL//副控
 		manager::CANSelect(&hcan1,NULL);//选can
 //		Pinwheel.Enable_Block(4000, 200, 2);//大符电机启用堵转检测
 	#endif

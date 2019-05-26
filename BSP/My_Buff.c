@@ -28,11 +28,11 @@ uint8_t last_arm_flash = 0x00;//上次遍历过的臂
 uint8_t arm_flashed = 0x00;//已刷新过的臂
 TickType_t LastShootTick;
 
-#ifdef AUXILIARY//副控
+#ifdef SECONDARY_CONTROL//副控
 	uint8_t flag_auxiliary = 0;//副控专属，首次进入打符成功灯效模式标志
 #endif
 
-#ifndef AUXILIARY//主控
+#ifndef SECONDARY_CONTROL//主控
 	uint16_t Unprogrammable_Light_Bar = 0x0000;//不可编程的灯条
 	uint8_t hit[17] = {0};//记录五个装甲板的打击次数
 	uint8_t auxiliary_finished_flag = 0;//副控完成打符成功灯效标志，1为已完成，在can回调函数中更新
@@ -89,7 +89,7 @@ void clear_with_purity_color(uint8_t color)//以纯色填充
 
 void buff_conveyer_belt(void)//大符灯效
 {
-	#ifndef AUXILIARY//主控
+	#ifndef SECONDARY_CONTROL//主控
 	if((arm_flash>>0)&0x01)//判断是否刷新传送带
 			return_data = SMD_LED_Running_Water_Effect_Configuration(0, CONVEYER_BELT, 3, BUFF_COLOR);
 		if((arm_flash>>1)&0x01)
@@ -108,7 +108,7 @@ void buff_conveyer_belt(void)//大符灯效
 
 void buff_all_on(void)//判断哪些臂已完成击打，设置为全亮
 {
-	#ifndef AUXILIARY//主控
+	#ifndef SECONDARY_CONTROL//主控
 		if((last_arm_flash>>0)&0x01)//判断是否刷新全亮
 			return_data = SMD_LED_Running_Water_Effect_Configuration(0, ALL_ON, 0, BUFF_COLOR);
 		if((last_arm_flash>>1)&0x01)
@@ -135,7 +135,7 @@ uint8_t buff_sucess_process_var(void)//大符全部击打成功灯效
 void buff_reset(void)//大符初始化
 {
 	clear_with_purity_color(0);//整个大符清屏
-	#ifndef AUXILIARY//主控
+	#ifndef SECONDARY_CONTROL//主控
 		hit[0] = 1;//开启第一个臂
 		auxiliary_finished_flag = 0;//副控成功打符灯效完成标志清零
 		Unprogrammable_Light_Bar = 0x0000;//不可编程灯条清屏
@@ -151,7 +151,7 @@ void buff_flag_sucess(void)//打符成功标志位处理
 	arm_flashed = 0xff;
 	last_arm_flash = 0xff;
 }
-#ifndef AUXILIARY//主控
+#ifndef SECONDARY_CONTROL//主控
 void buff_new_armnum_produce(void)//设置需要刷新的臂
 {
 	if(arm_flashed == 0x1f)/*已全部被刷新过*/
@@ -170,7 +170,7 @@ void buff_new_armnum_produce(void)//设置需要刷新的臂
 #endif
 void buff_flash(void)//大符刷新函数，线程中周期调用
 {
-	#ifndef AUXILIARY//主控
+	#ifndef SECONDARY_CONTROL//主控
 		if(arm_flash!=0xff && hit[arm_flash])//正确装甲板被击打
 		{
 			Unprogrammable_Light_Bar |= arm_flash;//此刻arm_flash还未被刷新，被击打的臂臂灯条亮
@@ -180,7 +180,7 @@ void buff_flash(void)//大符刷新函数，线程中周期调用
 	#endif
 	if(arm_flashed == 0xff && arm_flash == 0xff && last_arm_flash == 0xff)//打符成功
 	{
-		#ifdef AUXILIARY//副控
+		#ifdef SECONDARY_CONTROL//副控
 			if(flag_auxiliary == 0)//判断是否为首次进行成功打符灯效判断是否要进行index清零,准备成功打符灯效
 				memset(RGB_Start_index, 0x00, sizeof(RGB_Start_index));
 			flag_auxiliary = 1;//下次便不需要进行start_index清零
@@ -198,7 +198,7 @@ void buff_flash(void)//大符刷新函数，线程中周期调用
 			#endif
 	}else
 	{
-		#ifdef AUXILIARY//副控
+		#ifdef SECONDARY_CONTROL//副控
 			flag_auxiliary = 0;
 		#endif
 		buff_conveyer_belt();//根据标志位选择臂进行传送带灯效显示

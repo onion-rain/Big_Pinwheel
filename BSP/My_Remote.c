@@ -205,12 +205,12 @@ static void run(uint8_t type)
 	switch(type)
 	{
 		case STARTING:
-			#ifndef AUXILIARY//主控
+			#ifndef SECONDARY_CONTROL//主控
 				hit[0] = 1;//开启第一个臂
 			#endif
 			break;
 		case RUNNING:
-			#ifndef AUXILIARY//主控
+			#ifndef SECONDARY_CONTROL//主控
 				if(HAL_GetTick()-LastShootTick>2500 && last_arm_flash!=0x00)//打符失败
 				{
 					RC_Ctl.rc.s1 = 0;
@@ -284,7 +284,7 @@ void Remote_Handle(void)
 	}
 	Remote_Distribute(remote_mode,RUNNING);      //持续当前模式
 	
-	#ifndef AUXILIARY
+	#ifndef SECONDARY_CONTROL
 		can_buffer[0] = RC_Ctl.rc.s1*10+RC_Ctl.rc.s2;
 		can_buffer[1] = arm_flash<<8 | last_arm_flash;
 		can_buffer[2] = arm_flashed<<8;

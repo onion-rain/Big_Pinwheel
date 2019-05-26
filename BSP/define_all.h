@@ -28,15 +28,18 @@
 				#define configUSE_TRACE_FACILITY                     1
 				#define configGENERATE_RUN_TIME_STATS                1
 				#define configUSE_STATS_FORMATTING_FUNCTIONS         1
-				#define portCONFIGURE_TIMER_FOR_RUN_TIME_STATS()     (ulHighFrequencyTimerTicks = 0ul) 
+				#define portCONFIGURE_TIMER_FOR_RUN_TIME_STATS()     (ulHighFrequencyTimerTicks = 0ul)
 				#define portGET_RUN_TIME_COUNTER_VALUE()             ulHighFrequencyTimerTicks
 */
 
 /**********************便于移植**********************/
 /** 
-  * @brief 大符主控or副控
+  * @brief 大符控制板选择
 */
-#define AUXILIARY
+//#define MASTER_CONTROL
+#define SECONDARY_CONTROL
+//#define THIRD_CONTROL
+//#define FOURTH_CONTROL
 /** 
   * @brief pwm定时器通道定义
   * @refer My_Car.cpp

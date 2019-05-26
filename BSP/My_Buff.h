@@ -15,7 +15,7 @@
 #include "cmsis_os.h"
 
 extern uint8_t arm_flash, last_arm_flash, arm_flashed;
-#ifndef AUXILIARY//主控
+#ifndef SECONDARY_CONTROL//主控
 	extern uint8_t hit[17];//记录五个装甲板的打击次数
 	extern uint16_t Unprogrammable_Light_Bar;
 #endif

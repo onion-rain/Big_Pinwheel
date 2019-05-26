@@ -24,7 +24,7 @@ static uint8_t data[8];//接收数据缓冲区
 void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan)
 {
 	HAL_CAN_GetRxMessage(hcan,CAN_RX_FIFO0,&RxHead,data);
-	#ifndef AUXILIARY
+	#ifndef SECONDARY_CONTROL
 		if(RxHead.StdId == 0x222)//
 			auxiliary_finished_flag = data[1];
 	#else
