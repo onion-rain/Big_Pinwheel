@@ -200,24 +200,40 @@ static void Tetris(uint8_t type)
 			break;
 	}
 }
+#ifdef MASTER_CONTROL//主控
 static void run(uint8_t type)
 {
 	switch(type)
 	{
 		case STARTING:
-			#ifndef SECONDARY_CONTROL//主控
-				hit[0] = 1;//开启第一个臂
-			#endif
+			hit[0] = 1;//开启第一个臂
 			break;
 		case RUNNING:
-			#ifndef SECONDARY_CONTROL//主控
-				if(HAL_GetTick()-LastShootTick>2500 && last_arm_flash!=0x00)//打符失败
-				{
-					RC_Ctl.rc.s1 = 0;
-					RC_Ctl.rc.s2 = 0;
-					LastShootTick = HAL_GetTick();
-				}else
-			#endif
+			if(HAL_GetTick()-LastShootTick>2500 && last_arm_flash!=0x00)//打符失败
+			{
+				RC_Ctl.rc.s1 = 0;
+				RC_Ctl.rc.s2 = 0;
+				LastShootTick = HAL_GetTick();
+			}else
+				if(HAL_GetTick()%80 == 0)
+					buff_flash();//大符刷新
+			break;
+		case ENDING:
+			buff_reset();
+			memset(RGB_Start_index, 0x00, sizeof(RGB_Start_index));
+			SMD_LED_PWM_Init();
+			break;
+	}
+}
+#endif
+#ifdef SECONDARY_CONTROL
+static void run(uint8_t type)
+{
+	switch(type)
+	{
+		case STARTING:
+			break;
+		case RUNNING:
 			if(HAL_GetTick()%80 == 0)
 				buff_flash();//大符刷新
 			break;
@@ -228,6 +244,7 @@ static void run(uint8_t type)
 			break;
 	}
 }
+#endif
 /** 
     * @brief 安全模式
 */
@@ -279,17 +296,17 @@ void Remote_Handle(void)
 	{
 		Remote_Distribute(last_mode,ENDING);       //退出之前的模式
 		Remote_Distribute(remote_mode,STARTING);   //启用当前模式 开始部分
-//		Remote_Distribute(remote_mode,RUNNING);    //跑一次当前模式的running
 		last_mode = remote_mode;
 	}
 	Remote_Distribute(remote_mode,RUNNING);      //持续当前模式
 	
-	#ifndef SECONDARY_CONTROL
+	#ifdef MASTER_CONTROL
 		can_buffer[0] = RC_Ctl.rc.s1*10+RC_Ctl.rc.s2;
-		can_buffer[1] = arm_flash<<8 | last_arm_flash;
-		can_buffer[2] = arm_flashed<<8;
-		can_send_msg(&hcan1, 0x111, can_buffer);//给副控1发信息
-		
+		can_buffer[1] = arm_flash;
+		can_buffer[2] = last_arm_flash;
+		can_buffer[3] = arm_flashed;
+		can_send_msg(&hcan1, 0x102, can_buffer);//给2号板发信息
+	
 		memset(can_buffer, 0, sizeof(can_buffer));
 		can_buffer[0] = Unprogrammable_Light_Bar;
 		can_send_msg(&hcan1, 0x333, can_buffer);//给电磁阀控制板发信息

@@ -33,7 +33,6 @@ void MOTOR_Init_All(void)
 {
 	#ifdef SECONDARY_CONTROL//副控
 		manager::CANSelect(&hcan1,NULL);//选can
-//		Pinwheel.Enable_Block(4000, 200, 2);//大符电机启用堵转检测
 	#endif
 	__HAL_TIM_ENABLE_IT(ARM_TIM,TIM_IT_UPDATE);
 	HAL_TIM_PWM_Start(ARM_TIM,ARM0_CHANNEL);

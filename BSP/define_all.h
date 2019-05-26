@@ -34,10 +34,10 @@
 
 /**********************便于移植**********************/
 /** 
-  * @brief 大符控制板选择
+  * @brief 大符控制板选择(四选一)
 */
-//#define MASTER_CONTROL
-#define SECONDARY_CONTROL
+#define MASTER_CONTROL
+//#define SECONDARY_CONTROL
 //#define THIRD_CONTROL
 //#define FOURTH_CONTROL
 /** 
