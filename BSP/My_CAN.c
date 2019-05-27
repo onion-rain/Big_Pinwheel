@@ -16,7 +16,7 @@
 #include "My_SMDLED.h"
 
 CAN_RxHeaderTypeDef RxHead;
-extern uint8_t arm_flash, last_arm_flash, arm_flashed;
+extern int16_t arm_flash, last_arm_flash, arm_flashed;
 extern uint8_t secondary_finished_flag;
 
 static uint8_t data[8];//接收数据缓冲区

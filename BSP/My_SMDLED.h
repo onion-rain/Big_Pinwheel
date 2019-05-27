@@ -22,6 +22,7 @@
 #define GRADATION 0x10
 #define RUNNING_WATER 0x18
 
+//大符臂流水灯阵灯效
 #define ALL_ON 0x00
 #define SLIDING_WINDOW 0x01
 #define CONVEYER_BELT 0x02
@@ -30,8 +31,16 @@
 #define PROGRESS_BAR_2 0x05
 #define TETRIS 0x06
 
+//大符臂外围灯效
+#define UNSETLECTED 0x00
+#define WAIT_HIT 0x01
+#define HITTED 0x02
+#define SUCCESS 0x03
+
 uint8_t SMD_LED_Running_Water_Effect_Configuration(uint8_t arm, uint8_t mode, uint8_t parameter, uint8_t color);
-void SMD_LED_IT(void);
+void ARM_Peripheral_lighting_effect(uint8_t arm, uint8_t mode, uint8_t color);
+void SMD_INSIDE_LED_IT(void);
+void SMD_OUTSIDE_LED_IT(void);
 void SMD_LED_PWM_Init(void);
 
 #endif

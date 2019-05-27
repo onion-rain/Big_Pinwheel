@@ -18,7 +18,7 @@
 #include "Global_Variable.h"
 #include "Dbus_Uart.h"
 
-extern uint8_t arm_flash, last_arm_flash, arm_flashed;
+extern int16_t arm_flash, last_arm_flash, arm_flashed;
 
 void MainTask(void const * argument)
 {

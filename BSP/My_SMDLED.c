@@ -1,6 +1,6 @@
 /** 
 * @brief    SMD型LED板级支持包
-* @details  SMD_LED_IT()需要放到时钟中断回调函数中
+* @details  SMD_INSIDE_LED_IT()需要放到时钟中断回调函数中
 * @author   Onion rain
 * @date     2019.3.4
 * @version  1.0
@@ -15,23 +15,31 @@
 #include <stdlib.h>
 #include "define_all.h"
 
-#define MAX_RGB_NUM 64//单列长度
-#define MAX_ARM_NUM 3//单个主控最大控制臂个数
+#define ARM_PER_BOARD 3//每个主控最大控制臂个数
+#define ROW_PER_ARM 5//单臂列数
+#define RGB_PER_ROW 64//单列RGB数
+#define ARM_OUTSIDE_LENGTH 80//大符臂外围灯条长度(单边长度)
+#define ARM_RECTANGLE_LENGTH 50//矩形框灯条长度(矩形周长/2)
 
-uint8_t Arm_LED_Data[MAX_ARM_NUM][5][MAX_RGB_NUM][3] = {0xff};//Arm_LED_Data[风车臂序号][单臂RGB列数][单臂单列RGB数][单RGB LED数]
-uint8_t row_index[MAX_ARM_NUM] = {0};//5个臂各自的列指针(0~4)
-uint8_t RGB_index[MAX_ARM_NUM] = {0};//5个臂各自的RGB指针(0~MAX_RGB_NUM-1)
-uint8_t LED_index[MAX_ARM_NUM] = {0};//5个臂各自的LED指针(0~2)
-uint8_t bit_index[MAX_ARM_NUM] = {1};//5个臂各自的数据位指针(0-7),第0个信号在SMD_LED_Color_Set中设置，中断中从第二个信号开始处理
+uint8_t Arm_Outside_LED_Data[ARM_PER_BOARD][ARM_OUTSIDE_LENGTH+ARM_RECTANGLE_LENGTH][3] = {0xff};//Arm_Outside_LED_Data[风车臂序号][单臂RGB数/2][单RGB LED数]
+uint8_t Outside_RGB_index[ARM_PER_BOARD] = {0};//5个臂各自的RGB指针(0~RGB_PER_ROW-1)
+uint8_t Outside_LED_index[ARM_PER_BOARD] = {0};//5个臂各自的LED指针(0~2)
+uint8_t Outside_bit_index[ARM_PER_BOARD] = {1};//5个臂各自的数据位指针(0-7),第0个信号在SMD_LED_Color_Set中设置，中断中从第二个信号开始处理
+uint8_t Arm_Inside_LED_Data[ARM_PER_BOARD][ROW_PER_ARM][RGB_PER_ROW][3] = {0xff};//Arm_Inside_LED_Data[风车臂序号][单臂RGB列数][单臂单列RGB数][单RGB LED数]
+uint8_t Inside_row_index[ARM_PER_BOARD] = {0};//5个臂各自的列指针(0~4)
+uint8_t Inside_RGB_index[ARM_PER_BOARD] = {0};//5个臂各自的RGB指针(0~RGB_PER_ROW-1)
+uint8_t Inside_LED_index[ARM_PER_BOARD] = {0};//5个臂各自的LED指针(0~2)
+uint8_t Inside_bit_index[ARM_PER_BOARD] = {1};//5个臂各自的数据位指针(0-7),第0个信号在SMD_LED_Color_Set中设置，中断中从第二个信号开始处理
 
 //SMD_LED_Running_Water_Effect_Configuration专属变量
-int8_t RGB_Start_index[5][5] = {0};//储存当前周期下各旋臂各列的起始亮RGB标号
-uint8_t RGB_Tail_num[5][5] = {0};//储存当前周期下各旋臂各列的尾部聚集的发光RGB数量(滴水进度条、俄罗斯方块专属)
+int8_t RGB_Start_index[5][ROW_PER_ARM] = {0};//储存当前周期下各旋臂各列的起始亮RGB标号
+uint8_t RGB_Tail_num[5][ROW_PER_ARM] = {0};//储存当前周期下各旋臂各列的尾部聚集的发光RGB数量(滴水进度条、俄罗斯方块专属)
+uint8_t RGB_success_schedule[5] = {0};//打符成功边缘灯条进度条进度信息
 
 //滑动窗口
 static uint8_t Sliding_Window(uint8_t arm, uint8_t parameter)
 {
-	for(uint8_t row=0; row<5; row++)
+	for(uint8_t row=0; row<ROW_PER_ARM; row++)
 	{
 		//生成箭头
 		if(row==1 || row==3)//1、3列前移一位
@@ -40,26 +48,26 @@ static uint8_t Sliding_Window(uint8_t arm, uint8_t parameter)
 			RGB_Start_index[arm][row] = RGB_Start_index[arm][0] + 1;
 		//开头、结尾特殊处理
 		if(RGB_Start_index[arm][row] < 0)
-			memset(Arm_LED_Data[arm][row][0], 0xff, (parameter+RGB_Start_index[arm][row])*3);
-		else if(RGB_Start_index[arm][row] > MAX_RGB_NUM-parameter)
-			memset(Arm_LED_Data[arm][row][RGB_Start_index[arm][row]], 0xff, (MAX_RGB_NUM-RGB_Start_index[arm][row])*3);
+			memset(Arm_Inside_LED_Data[arm][row][0], 0xff, (parameter+RGB_Start_index[arm][row])*3);
+		else if(RGB_Start_index[arm][row] > RGB_PER_ROW-parameter)
+			memset(Arm_Inside_LED_Data[arm][row][RGB_Start_index[arm][row]], 0xff, (RGB_PER_ROW-RGB_Start_index[arm][row])*3);
 		else
-			memset(Arm_LED_Data[arm][row][RGB_Start_index[arm][row]], 0xff, parameter*3);
+			memset(Arm_Inside_LED_Data[arm][row][RGB_Start_index[arm][row]], 0xff, parameter*3);
 		RGB_Start_index[arm][row]++;//累加
-		if(RGB_Start_index[arm][row] >= MAX_RGB_NUM)
+		if(RGB_Start_index[arm][row] >= RGB_PER_ROW)
 			RGB_Start_index[arm][row] = -parameter;//溢出归零
 		if(row%2 != 0)//1、3列反转
-			std::reverse(Arm_LED_Data[arm][row][0], Arm_LED_Data[arm][row][MAX_RGB_NUM]);//此处Arm_LED_Data[arm][row][MAX_RGB_NUM-1]会导致灯条显示bug，暂未知原因
+			std::reverse(Arm_Inside_LED_Data[arm][row][0], Arm_Inside_LED_Data[arm][row][RGB_PER_ROW]);//此处Arm_Inside_LED_Data[arm][row][RGB_PER_ROW-1]会导致灯条显示bug，暂未知原因
 	}
-	uint8_t return_num = MAX_RGB_NUM+1-RGB_Start_index[arm][2]-parameter;//返回第三列尖端位置
-	if(return_num > MAX_RGB_NUM)
+	uint8_t return_num = RGB_PER_ROW+1-RGB_Start_index[arm][2]-parameter;//返回第三列尖端位置
+	if(return_num > RGB_PER_ROW)
 		return 0;
 	else return return_num;
 }
 //传送带
 static uint8_t Conveyer_Belt(uint8_t arm, uint8_t parameter)
 {
-	for(uint8_t row=0; row<5; row++)
+	for(uint8_t row=0; row<ROW_PER_ARM; row++)
 	{
 		//生成箭头
 		if(row==1 || row==3)//1、3列前移一位
@@ -69,104 +77,104 @@ static uint8_t Conveyer_Belt(uint8_t arm, uint8_t parameter)
 		
 		if(RGB_Start_index[arm][row] > parameter)
 			RGB_Start_index[arm][row] -= parameter;
-		for(uint8_t i=0; i<=((MAX_RGB_NUM-RGB_Start_index[arm][row])/parameter); i++)//每个亮块的start RGB序号
+		for(uint8_t i=0; i<=((RGB_PER_ROW-RGB_Start_index[arm][row])/parameter); i++)//每个亮块的start RGB序号
 		{
 			if(RGB_Start_index[arm][row]+i*parameter < 0)
 				if(i%2 == 0)
-					memset(Arm_LED_Data[arm][row][0], 0xff, (parameter+RGB_Start_index[arm][row])*3);
-				else memset(Arm_LED_Data[arm][row][0], 0x00, (parameter+RGB_Start_index[arm][row])*3);
-			else if(RGB_Start_index[arm][row]+i*parameter > MAX_RGB_NUM-parameter)
+					memset(Arm_Inside_LED_Data[arm][row][0], 0xff, (parameter+RGB_Start_index[arm][row])*3);
+				else memset(Arm_Inside_LED_Data[arm][row][0], 0x00, (parameter+RGB_Start_index[arm][row])*3);
+			else if(RGB_Start_index[arm][row]+i*parameter > RGB_PER_ROW-parameter)
 				if(i%2 == 0)
-					memset(Arm_LED_Data[arm][row][RGB_Start_index[arm][row]+i*parameter], 0xff, (MAX_RGB_NUM-RGB_Start_index[arm][row]-i*parameter)*3);
-				else memset(Arm_LED_Data[arm][row][RGB_Start_index[arm][row]+i*parameter], 0x00, (MAX_RGB_NUM-RGB_Start_index[arm][row]-i*parameter)*3);
+					memset(Arm_Inside_LED_Data[arm][row][RGB_Start_index[arm][row]+i*parameter], 0xff, (RGB_PER_ROW-RGB_Start_index[arm][row]-i*parameter)*3);
+				else memset(Arm_Inside_LED_Data[arm][row][RGB_Start_index[arm][row]+i*parameter], 0x00, (RGB_PER_ROW-RGB_Start_index[arm][row]-i*parameter)*3);
 			else
 				if(i%2 == 0)
-					memset(Arm_LED_Data[arm][row][RGB_Start_index[arm][row]+i*parameter], 0xff, parameter*3);
-				else memset(Arm_LED_Data[arm][row][RGB_Start_index[arm][row]+i*parameter], 0x00, parameter*3);
+					memset(Arm_Inside_LED_Data[arm][row][RGB_Start_index[arm][row]+i*parameter], 0xff, parameter*3);
+				else memset(Arm_Inside_LED_Data[arm][row][RGB_Start_index[arm][row]+i*parameter], 0x00, parameter*3);
 		}
 		RGB_Start_index[arm][row]++;//累加
 		if(RGB_Start_index[arm][row] >= parameter)
 			RGB_Start_index[arm][row] = -parameter;//溢出归零
 		if(row%2 != 0)//1、3列反转
-			std::reverse(Arm_LED_Data[arm][row][0], Arm_LED_Data[arm][row][MAX_RGB_NUM]);//此处Arm_LED_Data[arm][row][MAX_RGB_NUM-1]会导致灯条显示bug，暂未知原因
+			std::reverse(Arm_Inside_LED_Data[arm][row][0], Arm_Inside_LED_Data[arm][row][RGB_PER_ROW]);//此处Arm_Inside_LED_Data[arm][row][RGB_PER_ROW-1]会导致灯条显示bug，暂未知原因
 	}
 	return 0;
 }
 //交叉进度条
 static uint8_t Progress_Bar_0(uint8_t arm, uint8_t parameter)
 {
-	for(uint8_t row=0; row<5; row++)
+	for(uint8_t row=0; row<ROW_PER_ARM; row++)
 	{
-		memset(Arm_LED_Data[arm][row][0], 0xff, RGB_Start_index[arm][row]*3);
-		if(RGB_Start_index[arm][row] < MAX_RGB_NUM)
+		memset(Arm_Inside_LED_Data[arm][row][0], 0xff, RGB_Start_index[arm][row]*3);
+		if(RGB_Start_index[arm][row] < RGB_PER_ROW)
 			RGB_Start_index[arm][row]++;//累加
 	}
-	return MAX_RGB_NUM-RGB_Start_index[arm][2];
+	return RGB_PER_ROW-RGB_Start_index[arm][2];
 }
 //同向进度条
 static uint8_t Progress_Bar_1(uint8_t arm, uint8_t parameter)
 {
-	for(uint8_t row=0; row<5; row++)
+	for(uint8_t row=0; row<ROW_PER_ARM; row++)
 	{
-		memset(Arm_LED_Data[arm][row][0], 0xff, RGB_Start_index[arm][row]*3);
-		if(RGB_Start_index[arm][row] < MAX_RGB_NUM)
+		memset(Arm_Inside_LED_Data[arm][row][0], 0xff, RGB_Start_index[arm][row]*3);
+		if(RGB_Start_index[arm][row] < RGB_PER_ROW)
 			RGB_Start_index[arm][row] += parameter;//累加
 		if(row%2 != 0)//1、3列反转
-			std::reverse(Arm_LED_Data[arm][row][0], Arm_LED_Data[arm][row][MAX_RGB_NUM]);//此处Arm_LED_Data[arm][row][MAX_RGB_NUM-1]会导致灯条显示bug，暂未知原因
+			std::reverse(Arm_Inside_LED_Data[arm][row][0], Arm_Inside_LED_Data[arm][row][RGB_PER_ROW]);//此处Arm_Inside_LED_Data[arm][row][RGB_PER_ROW-1]会导致灯条显示bug，暂未知原因
 	}
-	return MAX_RGB_NUM-RGB_Start_index[arm][2];
+	return RGB_PER_ROW-RGB_Start_index[arm][2];
 }
 //滴水进度条
 static uint8_t Progress_Bar_2(uint8_t arm, uint8_t parameter)
 {
-	for(uint8_t row=0; row<5; row++)
+	for(uint8_t row=0; row<ROW_PER_ARM; row++)
 	{
 		//开头、结尾特殊处理
 		if(RGB_Start_index[arm][row] < 0)
-			memset(Arm_LED_Data[arm][row][0], 0xff, (parameter+RGB_Start_index[arm][row])*3);
-		else if(RGB_Start_index[arm][row] > MAX_RGB_NUM-parameter)
-			memset(Arm_LED_Data[arm][row][RGB_Start_index[arm][row]], 0xff, (MAX_RGB_NUM-RGB_Start_index[arm][row])*3);
+			memset(Arm_Inside_LED_Data[arm][row][0], 0xff, (parameter+RGB_Start_index[arm][row])*3);
+		else if(RGB_Start_index[arm][row] > RGB_PER_ROW-parameter)
+			memset(Arm_Inside_LED_Data[arm][row][RGB_Start_index[arm][row]], 0xff, (RGB_PER_ROW-RGB_Start_index[arm][row])*3);
 		else
-			memset(Arm_LED_Data[arm][row][RGB_Start_index[arm][row]], 0xff, parameter*3);
+			memset(Arm_Inside_LED_Data[arm][row][RGB_Start_index[arm][row]], 0xff, parameter*3);
 		RGB_Start_index[arm][row]++;//累加
-		if(RGB_Start_index[arm][row] > MAX_RGB_NUM-RGB_Tail_num[arm][row]-parameter)
+		if(RGB_Start_index[arm][row] > RGB_PER_ROW-RGB_Tail_num[arm][row]-parameter)
 		{
 			RGB_Start_index[arm][row] = -parameter;//溢出归零
 			RGB_Tail_num[arm][row] += parameter;
 		}
-		memset(Arm_LED_Data[arm][row][MAX_RGB_NUM-RGB_Tail_num[arm][row]], 0xff, RGB_Tail_num[arm][row]*3);
+		memset(Arm_Inside_LED_Data[arm][row][RGB_PER_ROW-RGB_Tail_num[arm][row]], 0xff, RGB_Tail_num[arm][row]*3);
 		if(row%2 != 0)//1、3列反转
-			std::reverse(Arm_LED_Data[arm][row][0], Arm_LED_Data[arm][row][MAX_RGB_NUM]);//此处Arm_LED_Data[arm][row][MAX_RGB_NUM-1]会导致灯条显示bug，暂未知原因
-		if(RGB_Tail_num[arm][row] >= MAX_RGB_NUM)
-			RGB_Tail_num[arm][row] = MAX_RGB_NUM;
+			std::reverse(Arm_Inside_LED_Data[arm][row][0], Arm_Inside_LED_Data[arm][row][RGB_PER_ROW]);//此处Arm_Inside_LED_Data[arm][row][RGB_PER_ROW-1]会导致灯条显示bug，暂未知原因
+		if(RGB_Tail_num[arm][row] >= RGB_PER_ROW)
+			RGB_Tail_num[arm][row] = RGB_PER_ROW;
 	}
-	return MAX_RGB_NUM-RGB_Tail_num[arm][3];
+	return RGB_PER_ROW-RGB_Tail_num[arm][3];
 }
 //俄罗斯方块
 static uint8_t Tetris(uint8_t arm, uint8_t parameter)
 {
-	for(uint8_t row=0; row<5; row++)
+	for(uint8_t row=0; row<ROW_PER_ARM; row++)
 	{
 		//开头、结尾特殊处理
 		if(RGB_Start_index[arm][row] < 0)
-			memset(Arm_LED_Data[arm][row][0], 0xff, (parameter+RGB_Start_index[arm][row])*3);
-		else if(RGB_Start_index[arm][row] > MAX_RGB_NUM-parameter)
-			memset(Arm_LED_Data[arm][row][RGB_Start_index[arm][row]], 0xff, (MAX_RGB_NUM-RGB_Start_index[arm][row])*3);
+			memset(Arm_Inside_LED_Data[arm][row][0], 0xff, (parameter+RGB_Start_index[arm][row])*3);
+		else if(RGB_Start_index[arm][row] > RGB_PER_ROW-parameter)
+			memset(Arm_Inside_LED_Data[arm][row][RGB_Start_index[arm][row]], 0xff, (RGB_PER_ROW-RGB_Start_index[arm][row])*3);
 		else
-			memset(Arm_LED_Data[arm][row][RGB_Start_index[arm][row]], 0xff, parameter*3);
+			memset(Arm_Inside_LED_Data[arm][row][RGB_Start_index[arm][row]], 0xff, parameter*3);
 		RGB_Start_index[arm][row]++;//累加
-		if(RGB_Start_index[arm][row] > MAX_RGB_NUM-RGB_Tail_num[arm][row]-parameter)
+		if(RGB_Start_index[arm][row] > RGB_PER_ROW-RGB_Tail_num[arm][row]-parameter)
 		{
 			RGB_Start_index[arm][row] = -parameter;//溢出归零
 			RGB_Tail_num[arm][row] += parameter;
 		}
-		memset(Arm_LED_Data[arm][row][MAX_RGB_NUM-RGB_Tail_num[arm][row]], 0xff, RGB_Tail_num[arm][row]*3);
+		memset(Arm_Inside_LED_Data[arm][row][RGB_PER_ROW-RGB_Tail_num[arm][row]], 0xff, RGB_Tail_num[arm][row]*3);
 		if(row%2 != 0)//1、3列反转
-			std::reverse(Arm_LED_Data[arm][row][0], Arm_LED_Data[arm][row][MAX_RGB_NUM]);//此处Arm_LED_Data[arm][row][MAX_RGB_NUM-1]会导致灯条显示bug，暂未知原因
-		if(RGB_Tail_num[arm][row] >= MAX_RGB_NUM)
-			RGB_Tail_num[arm][row] = MAX_RGB_NUM;
+			std::reverse(Arm_Inside_LED_Data[arm][row][0], Arm_Inside_LED_Data[arm][row][RGB_PER_ROW]);//此处Arm_Inside_LED_Data[arm][row][RGB_PER_ROW-1]会导致灯条显示bug，暂未知原因
+		if(RGB_Tail_num[arm][row] >= RGB_PER_ROW)
+			RGB_Tail_num[arm][row] = RGB_PER_ROW;
 	}
-	return MAX_RGB_NUM-RGB_Tail_num[arm][3];
+	return RGB_PER_ROW-RGB_Tail_num[arm][3];
 }
 
 /** @brief  灯条流水灯效设置
@@ -194,12 +202,12 @@ static uint8_t Tetris(uint8_t arm, uint8_t parameter)
 uint8_t SMD_LED_Running_Water_Effect_Configuration(uint8_t arm, uint8_t mode, uint8_t parameter, uint8_t color)
 {
 	uint8_t return_data;
-	//将每个RGB的亮灭配置信息放入Arm_LED_Data
-	memset(Arm_LED_Data[arm], 0x00, sizeof(Arm_LED_Data[arm]));//全部清零
+	//将每个RGB的亮灭配置信息放入Arm_Inside_LED_Data
+	memset(Arm_Inside_LED_Data[arm], 0x00, sizeof(Arm_Inside_LED_Data[arm]));//全部清零
 	switch(mode)
 	{
 		case ALL_ON:
-			memset(Arm_LED_Data[arm], 0xff, sizeof(Arm_LED_Data[arm]));//全部置一
+			memset(Arm_Inside_LED_Data[arm], 0xff, sizeof(Arm_Inside_LED_Data[arm]));//全部置一
 			return_data = 0;
 			break;
 		case SLIDING_WINDOW://滑动窗口
@@ -221,10 +229,10 @@ uint8_t SMD_LED_Running_Water_Effect_Configuration(uint8_t arm, uint8_t mode, ui
 			return_data = Tetris(arm, parameter);
 			break;
 	}
-	//将颜色信息添加入Arm_LED_Data
+	//将颜色信息添加入Arm_Inside_LED_Data
 	uint8_t color_set = 0;
-	for(uint8_t row=0; row<5; row++)
-		for(uint8_t led=0; led<MAX_RGB_NUM; led++)
+	for(uint8_t row=0; row<ROW_PER_ARM; row++)
+		for(uint8_t led=0; led<RGB_PER_ROW; led++)
 		{
 			switch(color & 0xf8)
 			{
@@ -234,11 +242,11 @@ uint8_t SMD_LED_Running_Water_Effect_Configuration(uint8_t arm, uint8_t mode, ui
 				case RUNNING_WATER:break;
 			}
 			if(!(color_set & GREEN))
-				Arm_LED_Data[arm][row][led][0] = 0x00;
+				Arm_Inside_LED_Data[arm][row][led][0] = 0x00;
 			if(!(color_set & RED))
-				Arm_LED_Data[arm][row][led][1] = 0x00;
+				Arm_Inside_LED_Data[arm][row][led][1] = 0x00;
 			if(!(color_set & BLUE))
-				Arm_LED_Data[arm][row][led][2] = 0x00;
+				Arm_Inside_LED_Data[arm][row][led][2] = 0x00;
 		}
 	return return_data;
 }
@@ -249,17 +257,17 @@ uint8_t SMD_LED_Running_Water_Effect_Configuration(uint8_t arm, uint8_t mode, ui
 void SMD_LED_PWM_Init(void)
 {
 	//设置各臂第一列第一个RGB中的绿色LED pwm脉冲占空比，
-	if(Arm_LED_Data[0][0][LED_index[0]/3][LED_index[0]%3] == 0xff)
+	if(Arm_Inside_LED_Data[0][0][Inside_LED_index[0]/3][Inside_LED_index[0]%3] == 0xff)
 		ARM0_PULSE = LOGIC_ONE_PULSE;
 	else
 		ARM0_PULSE = LOGIC_ZERO_PULSE;
 
-	if(Arm_LED_Data[1][0][LED_index[1]/3][LED_index[1]%3] == 0xff)
+	if(Arm_Inside_LED_Data[1][0][Inside_LED_index[1]/3][Inside_LED_index[1]%3] == 0xff)
 		ARM1_PULSE = LOGIC_ONE_PULSE;
 	else
 		ARM1_PULSE = LOGIC_ZERO_PULSE;
 
-	if(Arm_LED_Data[2][0][LED_index[2]/3][LED_index[2]%3] == 0xff)
+	if(Arm_Inside_LED_Data[2][0][Inside_LED_index[2]/3][Inside_LED_index[2]%3] == 0xff)
 		ARM2_PULSE = LOGIC_ONE_PULSE;
 	else
 		ARM2_PULSE = LOGIC_ZERO_PULSE;
@@ -267,11 +275,11 @@ void SMD_LED_PWM_Init(void)
 	__HAL_TIM_ENABLE_IT(ARM_TIM,TIM_IT_UPDATE);
 }
 
-void SMD_LED_IT(void)
+void SMD_INSIDE_LED_IT(void)//内部灯阵中断处理函数
 {
-	for(uint8_t i=0; i<MAX_ARM_NUM; i++)
+	for(uint8_t i=0; i<ARM_PER_BOARD; i++)
 	{
-		if(Arm_LED_Data[i][row_index[i]][RGB_index[i]][LED_index[i]] == 0xff)
+		if(Arm_Inside_LED_Data[i][Inside_row_index[i]][Inside_RGB_index[i]][Inside_LED_index[i]] == 0xff)
 			switch(i)
 			{
 				case 0:ARM0_PULSE = LOGIC_ONE_PULSE;break;
@@ -285,38 +293,133 @@ void SMD_LED_IT(void)
 				case 1:ARM1_PULSE = LOGIC_ZERO_PULSE;break;
 				case 2:ARM2_PULSE = LOGIC_ZERO_PULSE;break;
 			}
-		bit_index[i]++;
-		if(bit_index[i] == 8)//一个LED的8位数据遍历完
+		Inside_bit_index[i]++;
+		if(Inside_bit_index[i] == 8)//一个LED的8位数据遍历完
 		{
-			bit_index[i] = 0;//数据位指针归零
-			LED_index[i]++;//下一个LED
-			if(LED_index[i] == 3)
+			Inside_bit_index[i] = 0;//数据位指针归零
+			Inside_LED_index[i]++;//下一个LED
+			if(Inside_LED_index[i] == 3)
 			{
-				LED_index[i] = 0;//LED指针清零
-				RGB_index[i]++;//下一个RGB
-				if(RGB_index[i] == MAX_RGB_NUM)
+				Inside_LED_index[i] = 0;//LED指针清零
+				Inside_RGB_index[i]++;//下一个RGB
+				if(Inside_RGB_index[i] == RGB_PER_ROW)
 				{
-					RGB_index[i] = 0;//RGB指针清零
-					row_index[i]++;//下一列
-					if(row_index[i] == 5)
+					Inside_RGB_index[i] = 0;//RGB指针清零
+					Inside_row_index[i]++;//下一列
+					if(Inside_row_index[i] == 5)
 					{
-						if(!((i+1)<MAX_ARM_NUM))//不满足下次循环表示是需要遍历的最后一个灯臂
+						if(!((i+1)<ARM_PER_BOARD))//不满足下次循环表示是需要遍历的最后一个灯臂
 						{
 							__HAL_TIM_DISABLE_IT(ARM_TIM,TIM_IT_UPDATE);//关中断
 							ARM0_PULSE = 0;
 							ARM1_PULSE = 0;
 							ARM2_PULSE = 0;
 						}
-						row_index[i] = 0;//列指针清零
-						bit_index[i] = 1;//当遍历完一个臂上所有RGB的所有LED的所有位，下次进中断设置的应是第二个LED的占空比，故此处为1
+						Inside_row_index[i] = 0;//列指针清零
+						Inside_bit_index[i] = 1;//当遍历完一个臂上所有RGB的所有LED的所有位，下次进中断设置的应是第二个LED的占空比，故此处为1
 					}
 				}
 			}
 		}
 	}
 }
-
-
-
-
+void SMD_OUTSIDE_LED_IT(void)//外部灯条中断处理函数
+{
+	for(uint8_t arm=0; arm<ARM_PER_BOARD; arm++)
+	{
+		if(Arm_Outside_LED_Data[arm][Outside_RGB_index[arm]][Outside_LED_index[arm]] == 0xff)
+			switch(arm)
+			{
+				case 0:ARM0_PULSE = LOGIC_ONE_PULSE;break;
+				case 1:ARM1_PULSE = LOGIC_ONE_PULSE;break;
+				case 2:ARM2_PULSE = LOGIC_ONE_PULSE;break;
+			}
+		else
+			switch(arm)
+			{
+				case 0:ARM0_PULSE = LOGIC_ZERO_PULSE;break;
+				case 1:ARM1_PULSE = LOGIC_ZERO_PULSE;break;
+				case 2:ARM2_PULSE = LOGIC_ZERO_PULSE;break;
+			}
+		Outside_bit_index[arm]++;
+		if(Outside_bit_index[arm] == 8)//一个LED的8位数据遍历完
+		{
+			Outside_bit_index[arm] = 0;//数据位指针归零
+			Outside_LED_index[arm]++;//下一个LED
+			if(Outside_LED_index[arm] == 3)
+			{
+				Outside_LED_index[arm] = 0;//LED指针清零
+				Outside_RGB_index[arm]++;//下一个RGB
+				if(Outside_RGB_index[arm] == ARM_OUTSIDE_LENGTH+ARM_RECTANGLE_LENGTH)
+				{
+					if(!((arm+1)<ARM_PER_BOARD))//不满足下次循环表示是需要遍历的最后一个灯臂
+					{
+						__HAL_TIM_DISABLE_IT(ARM_TIM,TIM_IT_UPDATE);//关中断
+						ARM0_PULSE = 0;
+						ARM1_PULSE = 0;
+						ARM2_PULSE = 0;
+					}
+					Outside_bit_index[arm] = 1;//当遍历完一个臂上所有RGB的所有LED的所有位，下次进中断设置的应是第二个LED的占空比，故此处为1
+				}
+			}
+		}
+	}
+}
+/** @brief  大符臂外围灯效
+	* @param	[in]  arm	灯臂标号
+	* @param	[in]  mode 模式
+  *					This parameter can be one of the following values:
+	*         @arg UNSETLECTED: 未被选中，全灭
+	*         @arg WAIT_HIT: 等待打击，矩形框亮，臂灯灭
+	*         @arg HITTED: 已被打中，全亮
+	*         @arg SUCCESS: 大符激活成功，流水效果
+	* @param	[in]  color 显示的颜色
+  *					This parameter can be one of the following values:
+	*         @arg GREEN: 纯色绿色
+	*         @arg RED: 	纯色红色
+	*         @arg BLUE:  纯色蓝色(纯色间可用|自由搭配)
+	*         @arg RAND:	随机色
+	*         @arg RUNNING_WATER:	流水灯效
+	* @details	周期调用该函数以达到流水效果
+	* @retval 不同mode含义不同
+	*/
+void ARM_Peripheral_lighting_effect(uint8_t arm, uint8_t mode, uint8_t color)
+{
+	//将每个RGB的亮灭配置信息放入Arm_Inside_LED_Data
+	memset(Arm_Outside_LED_Data[arm], 0x00, sizeof(Arm_Outside_LED_Data[arm]));//全部清零
+	switch(mode)
+	{
+		case UNSETLECTED://未被选中，全灭
+			break;
+		case WAIT_HIT://等待打击，矩形框亮，臂灯灭
+			memset(&Arm_Outside_LED_Data[arm][ARM_OUTSIDE_LENGTH], 0xff, ARM_RECTANGLE_LENGTH);//矩形灯条全部置一
+			break;
+		case HITTED://已被打中，全亮
+			memset(Arm_Outside_LED_Data[arm], 0xff, sizeof(Arm_Outside_LED_Data[arm]));//全部置一
+			break;
+		case SUCCESS://大符激活成功，流水效果
+			memset(Arm_Outside_LED_Data[arm][0], 0xff, RGB_success_schedule[arm]*3);
+			if(RGB_success_schedule[arm] < ARM_OUTSIDE_LENGTH+ARM_RECTANGLE_LENGTH)
+				RGB_success_schedule[arm]++;//累加
+			break;
+	}
+	//将颜色信息添加入Arm_Outside_LED_Data
+	uint8_t color_set = 0;
+	for(uint8_t led=0; led<ARM_OUTSIDE_LENGTH+ARM_RECTANGLE_LENGTH; led++)
+	{
+		switch(color & 0xf8)
+		{
+			case 0:color_set = color;break;
+			case RAND:color_set = rand()%6+1;break;
+			case GRADATION:break;
+			case RUNNING_WATER:break;
+		}
+		if(!(color_set & GREEN))
+			Arm_Outside_LED_Data[arm][led][0] = 0x00;
+		if(!(color_set & RED))
+			Arm_Outside_LED_Data[arm][led][1] = 0x00;
+		if(!(color_set & BLUE))
+			Arm_Outside_LED_Data[arm][led][2] = 0x00;
+	}
+}
 

@@ -147,11 +147,11 @@ void buff_reset(void)//大符初始化
 	#ifdef MASTER_CONTROL//主控
 		hit[0] = 1;//开启第一个臂
 		secondary_finished_flag = 0;//副控成功打符灯效完成标志清零
-		Unprogrammable_Light_Bar = 0x0000;//不可编程灯条清屏
+		Unprogrammable_Light_Bar = 0;//不可编程灯条清屏
 	#endif
-	arm_flash = 0x00;
-	arm_flashed = 0x00;
-	last_arm_flash = 0x00;
+	arm_flash = 0;
+	arm_flashed = 0;
+	last_arm_flash = 0;
 }
 
 void buff_flag_sucess(void)//打符成功标志位处理

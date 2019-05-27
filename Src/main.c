@@ -231,10 +231,18 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
   /* USER CODE BEGIN Callback 1 */
 	else if(htim->Instance == TIM3)//
 	{
-		SMD_LED_IT();
-	}
-	else if(htim->Instance == TIM3)//ARM0
-	{
+		#ifdef MASTER_CONTROL
+			SMD_INSIDE_LED_IT();
+		#endif
+		#ifdef SECONDARY_CONTROL
+			SMD_INSIDE_LED_IT();
+		#endif
+		#ifdef THIRD_CONTROL
+			SMD_OUTSIDE_LED_IT();
+		#endif
+		#ifdef FOURTH_CONTROL
+			SMD_OUTSIDE_LED_IT();
+		#endif
 		
 	}
   /* USER CODE END Callback 1 */
