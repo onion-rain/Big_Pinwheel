@@ -36,17 +36,17 @@ static void Rand_Purity_Color(uint8_t type)
 	switch(type)
 	{
 		case STARTING:
-			return_data = SMD_LED_Running_Water_Effect_Configuration(0, ALL_ON, 0, rand()%6+1);
-			return_data = SMD_LED_Running_Water_Effect_Configuration(1, ALL_ON, 0, rand()%6+1);
-			return_data = SMD_LED_Running_Water_Effect_Configuration(2, ALL_ON, 0, rand()%6+1);
+			return_data = ARM_Inside_ligthting_effect(0, ALL_ON, 0, rand()%6+1);
+			return_data = ARM_Inside_ligthting_effect(1, ALL_ON, 0, rand()%6+1);
+			return_data = ARM_Inside_ligthting_effect(2, ALL_ON, 0, rand()%6+1);
 			SMD_LED_PWM_Init();
 			break;
 		case RUNNING:
 			break;
 		case ENDING:
-			return_data = SMD_LED_Running_Water_Effect_Configuration(0, ALL_ON, 0, 0);
-			return_data = SMD_LED_Running_Water_Effect_Configuration(1, ALL_ON, 0, 0);
-			return_data = SMD_LED_Running_Water_Effect_Configuration(2, ALL_ON, 0, 0);
+			return_data = ARM_Inside_ligthting_effect(0, ALL_ON, 0, 0);
+			return_data = ARM_Inside_ligthting_effect(1, ALL_ON, 0, 0);
+			return_data = ARM_Inside_ligthting_effect(2, ALL_ON, 0, 0);
 			SMD_LED_PWM_Init();
 			break;
 	}
@@ -76,9 +76,9 @@ static void Sliding_Window(uint8_t type)
 		case RUNNING:
 			if(HAL_GetTick()%100 == 0)
 			{
-				return_data = SMD_LED_Running_Water_Effect_Configuration(0, SLIDING_WINDOW, 10, RED);
-				return_data = SMD_LED_Running_Water_Effect_Configuration(1, SLIDING_WINDOW, 10, RED);
-				return_data = SMD_LED_Running_Water_Effect_Configuration(2, SLIDING_WINDOW, 10, RED);
+				return_data = ARM_Inside_ligthting_effect(0, SLIDING_WINDOW, 10, RED);
+				return_data = ARM_Inside_ligthting_effect(1, SLIDING_WINDOW, 10, RED);
+				return_data = ARM_Inside_ligthting_effect(2, SLIDING_WINDOW, 10, RED);
 				SMD_LED_PWM_Init();
 			}
 			break;
@@ -98,9 +98,9 @@ static void Conveyer_Belt(uint8_t type)
 		case RUNNING:
 			if(HAL_GetTick()%200 == 0)
 			{
-				return_data = SMD_LED_Running_Water_Effect_Configuration(0, CONVEYER_BELT, 3, BLUE);
-				return_data = SMD_LED_Running_Water_Effect_Configuration(1, CONVEYER_BELT, 3, BLUE);
-				return_data = SMD_LED_Running_Water_Effect_Configuration(2, CONVEYER_BELT, 3, BLUE);
+				return_data = ARM_Inside_ligthting_effect(0, CONVEYER_BELT, 3, BLUE);
+				return_data = ARM_Inside_ligthting_effect(1, CONVEYER_BELT, 3, BLUE);
+				return_data = ARM_Inside_ligthting_effect(2, CONVEYER_BELT, 3, BLUE);
 				SMD_LED_PWM_Init();
 			}
 			break;
@@ -120,9 +120,9 @@ static void Progress_Bar_0(uint8_t type)
 		case RUNNING:
 			if(HAL_GetTick()%100 == 0)
 			{
-				return_data = SMD_LED_Running_Water_Effect_Configuration(0, PROGRESS_BAR_0, 0, RED);
-				return_data = SMD_LED_Running_Water_Effect_Configuration(1, PROGRESS_BAR_0, 0, RED);
-				return_data = SMD_LED_Running_Water_Effect_Configuration(2, PROGRESS_BAR_0, 0, RED);
+				return_data = ARM_Inside_ligthting_effect(0, PROGRESS_BAR_0, 0, RED);
+				return_data = ARM_Inside_ligthting_effect(1, PROGRESS_BAR_0, 0, RED);
+				return_data = ARM_Inside_ligthting_effect(2, PROGRESS_BAR_0, 0, RED);
 				SMD_LED_PWM_Init();
 			}
 			break;
@@ -142,9 +142,9 @@ static void Progress_Bar_1(uint8_t type)
 		case RUNNING:
 			if(HAL_GetTick()%100 == 0)
 			{
-				return_data = SMD_LED_Running_Water_Effect_Configuration(0, PROGRESS_BAR_1, 1, BLUE);
-				return_data = SMD_LED_Running_Water_Effect_Configuration(1, PROGRESS_BAR_1, 1, BLUE);
-				return_data = SMD_LED_Running_Water_Effect_Configuration(2, PROGRESS_BAR_1, 1, BLUE);
+				return_data = ARM_Inside_ligthting_effect(0, PROGRESS_BAR_1, 1, BLUE);
+				return_data = ARM_Inside_ligthting_effect(1, PROGRESS_BAR_1, 1, BLUE);
+				return_data = ARM_Inside_ligthting_effect(2, PROGRESS_BAR_1, 1, BLUE);
 				SMD_LED_PWM_Init();
 			}
 			break;
@@ -164,9 +164,9 @@ static void Progress_Bar_2(uint8_t type)
 		case RUNNING:
 			if(HAL_GetTick()%85 == 0)
 			{
-				return_data = SMD_LED_Running_Water_Effect_Configuration(0, PROGRESS_BAR_2, 3, BLUE);
-				return_data = SMD_LED_Running_Water_Effect_Configuration(1, PROGRESS_BAR_2, 3, BLUE);
-				return_data = SMD_LED_Running_Water_Effect_Configuration(2, PROGRESS_BAR_2, 3, BLUE);
+				return_data = ARM_Inside_ligthting_effect(0, PROGRESS_BAR_2, 3, BLUE);
+				return_data = ARM_Inside_ligthting_effect(1, PROGRESS_BAR_2, 3, BLUE);
+				return_data = ARM_Inside_ligthting_effect(2, PROGRESS_BAR_2, 3, BLUE);
 				SMD_LED_PWM_Init();
 			}
 			break;
@@ -187,9 +187,9 @@ static void Tetris(uint8_t type)
 		case RUNNING:
 			if(HAL_GetTick()%100 == 0)
 			{
-				return_data = SMD_LED_Running_Water_Effect_Configuration(0, TETRIS, 10, RAND);
-				return_data = SMD_LED_Running_Water_Effect_Configuration(1, TETRIS, 10, RAND);
-				return_data = SMD_LED_Running_Water_Effect_Configuration(2, TETRIS, 10, RAND);
+				return_data = ARM_Inside_ligthting_effect(0, TETRIS, 10, RAND);
+				return_data = ARM_Inside_ligthting_effect(1, TETRIS, 10, RAND);
+				return_data = ARM_Inside_ligthting_effect(2, TETRIS, 10, RAND);
 				SMD_LED_PWM_Init();
 			}
 			break;
@@ -211,7 +211,7 @@ static void run(uint8_t type)
 		case RUNNING:
 			if(HAL_GetTick()-LastShootTick>2500 && last_arm_flash!=0x00)//打符失败
 			{
-				RC_Ctl.rc.s1 = 0;
+				RC_Ctl.rc.s1 = 0;//假装遥控器拨到安全来重启大符
 				RC_Ctl.rc.s2 = 0;
 				LastShootTick = HAL_GetTick();
 			}else
@@ -227,6 +227,44 @@ static void run(uint8_t type)
 }
 #endif
 #ifdef SECONDARY_CONTROL
+static void run(uint8_t type)
+{
+	switch(type)
+	{
+		case STARTING:
+			break;
+		case RUNNING:
+			if(HAL_GetTick()%80 == 0)
+				buff_flash();//大符刷新
+			break;
+		case ENDING:
+			buff_reset();
+			memset(RGB_Start_index, 0x00, sizeof(RGB_Start_index));
+			SMD_LED_PWM_Init();
+			break;
+	}
+}
+#endif
+#ifdef THIRD_CONTROL
+static void run(uint8_t type)
+{
+	switch(type)
+	{
+		case STARTING:
+			break;
+		case RUNNING:
+			if(HAL_GetTick()%80 == 0)
+				buff_flash();//大符刷新
+			break;
+		case ENDING:
+			buff_reset();
+			memset(RGB_Start_index, 0x00, sizeof(RGB_Start_index));
+			SMD_LED_PWM_Init();
+			break;
+	}
+}
+#endif
+#ifdef FOURTH_CONTROL
 static void run(uint8_t type)
 {
 	switch(type)
@@ -302,14 +340,10 @@ void Remote_Handle(void)
 	
 	#ifdef MASTER_CONTROL
 		can_buffer[0] = RC_Ctl.rc.s1*10+RC_Ctl.rc.s2;
-		can_buffer[1] = arm_flash;
-		can_buffer[2] = last_arm_flash;
-		can_buffer[3] = arm_flashed;
-		can_send_msg(&hcan1, 0x102, can_buffer);//给2号板发信息
-	
-		memset(can_buffer, 0, sizeof(can_buffer));
-		can_buffer[0] = Unprogrammable_Light_Bar;
-		can_send_msg(&hcan1, 0x333, can_buffer);//给电磁阀控制板发信息
+		can_buffer[1] = arm_flash<<8 | last_arm_flash;
+		can_buffer[2] = arm_flashed;
+		can_buffer[3] = arm_rectangle_on | arm_Utype_on;
+		can_send_msg(&hcan1, 0x100, can_buffer);//给副控们发信息
 	#endif
 }
 

@@ -14,7 +14,7 @@
 #include "stm32f4xx_hal.h"
 #include "cmsis_os.h"
 
-extern int16_t arm_flash, last_arm_flash, arm_flashed;
+extern uint8_t arm_flash, last_arm_flash, arm_flashed, arm_rectangle_on, arm_Utype_on;
 #ifdef MASTER_CONTROL//主控
 	extern uint8_t hit[17];//记录五个装甲板的打击次数
 	extern uint16_t Unprogrammable_Light_Bar;

@@ -37,8 +37,8 @@
 #define HITTED 0x02
 #define SUCCESS 0x03
 
-uint8_t SMD_LED_Running_Water_Effect_Configuration(uint8_t arm, uint8_t mode, uint8_t parameter, uint8_t color);
-void ARM_Peripheral_lighting_effect(uint8_t arm, uint8_t mode, uint8_t color);
+uint8_t ARM_Inside_ligthting_effect(uint8_t arm, uint8_t mode, uint8_t parameter, uint8_t color);
+void ARM_Outside_ligthting_effect(uint8_t arm, uint8_t mode, uint8_t color);
 void SMD_INSIDE_LED_IT(void);
 void SMD_OUTSIDE_LED_IT(void);
 void SMD_LED_PWM_Init(void);

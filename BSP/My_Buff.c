@@ -23,9 +23,14 @@ extern int8_t RGB_Start_index[5][5];//ÉùÃ÷ÓÚMy_SMDLED.c£¬ÇÐ»»Ä£Ê½Ê±ÇåÁã·ÀÖ¹²»Í¬Ä
 extern uint8_t RGB_Tail_num[5][5];//ÉùÃ÷ÓÚMy_SMDLED.c£¬ÇÐ»»Ä£Ê½Ê±ÇåÁã·ÀÖ¹²»Í¬Ä£Ê½¼ä¸ÉÈÅ
 
 static uint8_t return_data = 0;//debug×¨Êô
-int16_t arm_flash = 0x00;//[0-4]£¬Ã¿Ò»Î»´ú±íÒ»¸ö±ÛÖÐ¼äµÆÕó£¬1´ú±íµ±Ç°±ÛÐèÒªË¢ÐÂ£¬0±íÊ¾±£³ÖÏÖ×´
-int16_t last_arm_flash = 0x00;//ÉÏ´Î±éÀú¹ýµÄ±Û
-int16_t arm_flashed = 0x00;//ÒÑË¢ÐÂ¹ýµÄ±Û
+
+uint8_t arm_flash = 0x00;//[0-4]£¬Ã¿Ò»Î»´ú±íÒ»¸ö±ÛÖÐ¼äµÆÕó£¬1´ú±íµ±Ç°±ÛÐèÒªË¢ÐÂ(Á÷Ë®µÆÐ§)£¬0±íÊ¾±£³ÖÏÖ×´
+uint8_t last_arm_flash = 0x00;//[0-4]£¬Ã¿Ò»Î»´ú±íÒ»¸ö±ÛÖÐ¼äµÆÕó£¬1´ú±íµ±Ç°µÆÕóÐèÒªÈ«ÁÁ£¬0±íÊ¾±£³ÖÏÖ×´
+uint8_t arm_flashed = 0x00;//ÒÑË¢ÐÂ¹ýµÄ±Û
+
+uint8_t arm_rectangle_on = 0x00;//[0-4]£¬Ã¿Ò»Î»´ú±íÒ»¸ö±ÛÍâ²¿µÆÕó£¬1´ú±íµ±Ç°¾ØÕóµÆÕóÐèÒªÈ«ÁÁ£¬0±íÊ¾±£³ÖÏÖ×´
+uint8_t arm_Utype_on = 0x00;//[6-10]£¬Ã¿Ò»Î»´ú±íÒ»¸ö±ÛÍâ²¿UÐÍµÆÕó£¬1´ú±íµ±Ç°UÐÍµÆÕóÐèÒªÈ«ÁÁ£¬0±íÊ¾±£³ÖÏÖ×´
+
 TickType_t LastShootTick;
 
 #ifdef SECONDARY_CONTROL//¸±¿Ø
@@ -33,7 +38,6 @@ TickType_t LastShootTick;
 #endif
 
 #ifdef MASTER_CONTROL//Ö÷¿Ø
-	uint16_t Unprogrammable_Light_Bar = 0x0000;//²»¿É±à³ÌµÄµÆÌõ
 	uint8_t hit[17] = {0};//¼ÇÂ¼Îå¸ö×°¼×°åµÄ´ò»÷´ÎÊý
 	uint8_t secondary_finished_flag = 0;//¸±¿ØÍê³É´ò·û³É¹¦µÆÐ§±êÖ¾£¬1ÎªÒÑÍê³É£¬ÔÚcan»Øµ÷º¯ÊýÖÐ¸üÐÂ
 
@@ -82,28 +86,84 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)//×°¼×°åÊÜµ½´ò»÷»Øµ÷º¯Êý
 
 void clear_with_purity_color(uint8_t color)//ÒÔ´¿É«Ìî³ä
 {
-	SMD_LED_Running_Water_Effect_Configuration(0, ALL_ON, 0, color);
-	SMD_LED_Running_Water_Effect_Configuration(1, ALL_ON, 0, color);
-	SMD_LED_Running_Water_Effect_Configuration(2, ALL_ON, 0, color);
+	ARM_Inside_ligthting_effect(0, ALL_ON, 0, color);
+	ARM_Inside_ligthting_effect(1, ALL_ON, 0, color);
+	ARM_Inside_ligthting_effect(2, ALL_ON, 0, color);
 }
 
 void buff_conveyer_belt(void)//´ó·ûµÆÐ§
 {
 	#ifdef MASTER_CONTROL//Ö÷¿Ø
-	if((arm_flash>>0)&0x01)//ÅÐ¶ÏÊÇ·ñË¢ÐÂ´«ËÍ´ø
-			return_data = SMD_LED_Running_Water_Effect_Configuration(0, CONVEYER_BELT, 3, BUFF_COLOR);
+	if((arm_flash>>0)&0x01)//ÅÐ¶ÏÊÇ·ñË¢ÐÂ(Á÷Ë®µÆÐ§)
+			return_data = ARM_Inside_ligthting_effect(0, CONVEYER_BELT, 3, BUFF_COLOR);
 		if((arm_flash>>1)&0x01)
-			return_data = SMD_LED_Running_Water_Effect_Configuration(1, CONVEYER_BELT, 3, BUFF_COLOR);
+			return_data = ARM_Inside_ligthting_effect(1, CONVEYER_BELT, 3, BUFF_COLOR);
 		if((arm_flash>>2)&0x01)
-			return_data = SMD_LED_Running_Water_Effect_Configuration(2, CONVEYER_BELT, 3, BUFF_COLOR);
+			return_data = ARM_Inside_ligthting_effect(2, CONVEYER_BELT, 3, BUFF_COLOR);
 	#endif
 	#ifdef SECONDARY_CONTROL//¸±¿Ø
-		if((arm_flash>>3)&0x01)//ÅÐ¶ÏÊÇ·ñË¢ÐÂ´«ËÍ´ø
-			return_data = SMD_LED_Running_Water_Effect_Configuration(0, CONVEYER_BELT, 3, BUFF_COLOR);
+		if((arm_flash>>3)&0x01)//ÅÐ¶ÏÊÇ·ñË¢ÐÂ(Á÷Ë®µÆÐ§)
+			return_data = ARM_Inside_ligthting_effect(0, CONVEYER_BELT, 3, BUFF_COLOR);
 		if((arm_flash>>4)&0x01)
-			return_data = SMD_LED_Running_Water_Effect_Configuration(1, CONVEYER_BELT, 3, BUFF_COLOR);
+			return_data = ARM_Inside_ligthting_effect(1, CONVEYER_BELT, 3, BUFF_COLOR);
 		if((arm_flash>>5)&0x01)
-			return_data = SMD_LED_Running_Water_Effect_Configuration(2, CONVEYER_BELT, 3, BUFF_COLOR);
+			return_data = ARM_Inside_ligthting_effect(2, CONVEYER_BELT, 3, BUFF_COLOR);
+	#endif
+	#ifdef THIRD_CONTROL//¸±¿Ø
+		if((arm_rectangle_on>>0)&0x01 && (arm_Utype_on>>0)&0x01)//È«ÁÁ
+			ARM_Outside_ligthting_effect(0, HITTED, BUFF_COLOR);
+		else if((arm_rectangle_on>>0)&0x01 && !((arm_Utype_on>>0)&0x01))//¾ØÐÎµÆÕóÁÁ
+			ARM_Outside_ligthting_effect(0, WAIT_HIT, BUFF_COLOR);
+		else if(!((arm_rectangle_on>>0)&0x01) && !((arm_Utype_on>>0)&0x01))//È«Ãð
+			ARM_Outside_ligthting_effect(0, UNSETLECTED, BUFF_COLOR);
+		else if(!((arm_rectangle_on>>0)&0x01) && ((arm_Utype_on>>0)&0x01))//UÐÍµÆÕóÁÁ£¬²»Ó¦´æÔÚ¸ÃÇé¿ö£¬½ödebugÓÃ
+			return_data = ARM_Inside_ligthting_effect(0, CONVEYER_BELT, 3, BUFF_COLOR);
+		
+		if((arm_rectangle_on>>1)&0x01 && (arm_Utype_on>>1)&0x01)//È«ÁÁ
+			ARM_Outside_ligthting_effect(1, HITTED, BUFF_COLOR);
+		else if((arm_rectangle_on>>1)&0x01 && !((arm_Utype_on>>1)&0x01))//¾ØÐÎµÆÕóÁÁ
+			ARM_Outside_ligthting_effect(1, WAIT_HIT, BUFF_COLOR);
+		else if(!((arm_rectangle_on>>1)&0x01) && !((arm_Utype_on>>1)&0x01))//È«Ãð
+			ARM_Outside_ligthting_effect(1, UNSETLECTED, BUFF_COLOR);
+		else if(!((arm_rectangle_on>>1)&0x01) && ((arm_Utype_on>>1)&0x01))//UÐÍµÆÕóÁÁ£¬²»Ó¦´æÔÚ¸ÃÇé¿ö£¬½ödebugÓÃ
+			return_data = ARM_Inside_ligthting_effect(1, CONVEYER_BELT, 3, BUFF_COLOR);
+		
+		if((arm_rectangle_on>>2)&0x01 && (arm_Utype_on>>2)&0x01)//È«ÁÁ
+			ARM_Outside_ligthting_effect(2, HITTED, BUFF_COLOR);
+		else if((arm_rectangle_on>>2)&0x01 && !((arm_Utype_on>>2)&0x01))//¾ØÐÎµÆÕóÁÁ
+			ARM_Outside_ligthting_effect(2, WAIT_HIT, BUFF_COLOR);
+		else if(!((arm_rectangle_on>>2)&0x01) && !((arm_Utype_on>>2)&0x01))//È«Ãð
+			ARM_Outside_ligthting_effect(2, UNSETLECTED, BUFF_COLOR);
+		else if(!((arm_rectangle_on>>2)&0x01) && ((arm_Utype_on>>2)&0x01))//UÐÍµÆÕóÁÁ£¬²»Ó¦´æÔÚ¸ÃÇé¿ö£¬½ödebugÓÃ
+			return_data = ARM_Inside_ligthting_effect(2, CONVEYER_BELT, 3, BUFF_COLOR);
+	#endif
+	#ifdef FOURTH_CONTROL//¸±¿Ø
+		if((arm_rectangle_on>>3)&0x01 && (arm_Utype_on>>3)&0x01)//È«ÁÁ
+			ARM_Outside_ligthting_effect(0, HITTED, BUFF_COLOR);
+		else if((arm_rectangle_on>>3)&0x01 && !((arm_Utype_on>>3)&0x01))//¾ØÐÎµÆÕóÁÁ
+			ARM_Outside_ligthting_effect(0, WAIT_HIT, BUFF_COLOR);
+		else if(!((arm_rectangle_on>>3)&0x01) && !((arm_Utype_on>>3)&0x01))//È«Ãð
+			ARM_Outside_ligthting_effect(0, UNSETLECTED, BUFF_COLOR);
+		else if(!((arm_rectangle_on>>3)&0x01) && ((arm_Utype_on>>3)&0x01))//UÐÍµÆÕóÁÁ£¬²»Ó¦´æÔÚ¸ÃÇé¿ö£¬½ödebugÓÃ
+			return_data = ARM_Inside_ligthting_effect(0, CONVEYER_BELT, 3, BUFF_COLOR);
+			
+		if((arm_rectangle_on>>4)&0x01 && (arm_Utype_on>>4)&0x01)//È«ÁÁ
+			ARM_Outside_ligthting_effect(1, HITTED, BUFF_COLOR);
+		else if((arm_rectangle_on>>4)&0x01 && !((arm_Utype_on>>4)&0x01))//¾ØÐÎµÆÕóÁÁ
+			ARM_Outside_ligthting_effect(1, WAIT_HIT, BUFF_COLOR);
+		else if(!((arm_rectangle_on>>4)&0x01) && !((arm_Utype_on>>4)&0x01))//È«Ãð
+			ARM_Outside_ligthting_effect(1, UNSETLECTED, BUFF_COLOR);
+		else if(!((arm_rectangle_on>>4)&0x01) && ((arm_Utype_on>>4)&0x01))//UÐÍµÆÕóÁÁ£¬²»Ó¦´æÔÚ¸ÃÇé¿ö£¬½ödebugÓÃ
+			ARM_Inside_ligthting_effect(1, CONVEYER_BELT, BUFF_COLOR);
+			
+		if((arm_rectangle_on>>5)&0x01 && (arm_Utype_on>>5)&0x01)//È«ÁÁ
+			ARM_Outside_ligthting_effect(2, HITTED, BUFF_COLOR);
+		else if((arm_rectangle_on>>5)&0x01 && !((arm_Utype_on>>5)&0x01))//¾ØÐÎµÆÕóÁÁ
+			ARM_Outside_ligthting_effect(2, WAIT_HIT, BUFF_COLOR);
+		else if(!((arm_rectangle_on>>5)&0x01) && !((arm_Utype_on>>5)&0x01))//È«Ãð
+			ARM_Outside_ligthting_effect(2, UNSETLECTED, BUFF_COLOR);
+		else if(!((arm_rectangle_on>>5)&0x01) && ((arm_Utype_on>>5)&0x01))//UÐÍµÆÕóÁÁ£¬²»Ó¦´æÔÚ¸ÃÇé¿ö£¬½ödebugÓÃ
+			return_data = ARM_Inside_ligthting_effect(2, CONVEYER_BELT, BUFF_COLOR);
 	#endif
 }
 
@@ -111,33 +171,33 @@ void buff_all_on(void)//ÅÐ¶ÏÄÄÐ©±ÛÒÑÍê³É»÷´ò£¬ÉèÖÃÎªÈ«ÁÁ
 {
 	#ifdef MASTER_CONTROL//Ö÷¿Ø
 		if((last_arm_flash>>0)&0x01)//ÅÐ¶ÏÊÇ·ñË¢ÐÂÈ«ÁÁ
-			return_data = SMD_LED_Running_Water_Effect_Configuration(0, ALL_ON, 0, BUFF_COLOR);
+			return_data = ARM_Inside_ligthting_effect(0, ALL_ON, 0, BUFF_COLOR);
 		if((last_arm_flash>>1)&0x01)
-			return_data = SMD_LED_Running_Water_Effect_Configuration(1, ALL_ON, 0, BUFF_COLOR);
+			return_data = ARM_Inside_ligthting_effect(1, ALL_ON, 0, BUFF_COLOR);
 		if((last_arm_flash>>2)&0x01)
-			return_data = SMD_LED_Running_Water_Effect_Configuration(2, ALL_ON, 0, BUFF_COLOR);
+			return_data = ARM_Inside_ligthting_effect(2, ALL_ON, 0, BUFF_COLOR);
 	#endif
 	#ifdef SECONDARY_CONTROL//¸±¿Ø
 		if((last_arm_flash>>3)&0x01)//ÅÐ¶ÏÊÇ·ñË¢ÐÂÈ«ÁÁ
-			return_data = SMD_LED_Running_Water_Effect_Configuration(0, ALL_ON, 0, BUFF_COLOR);
+			return_data = ARM_Inside_ligthting_effect(0, ALL_ON, 0, BUFF_COLOR);
 		if((last_arm_flash>>4)&0x01)
-			return_data = SMD_LED_Running_Water_Effect_Configuration(1, ALL_ON, 0, BUFF_COLOR);
+			return_data = ARM_Inside_ligthting_effect(1, ALL_ON, 0, BUFF_COLOR);
 		if((last_arm_flash>>5)&0x01)
-			return_data = SMD_LED_Running_Water_Effect_Configuration(2, ALL_ON, 0, BUFF_COLOR);
+			return_data = ARM_Inside_ligthting_effect(2, ALL_ON, 0, BUFF_COLOR);
 	#endif
 }
 
 uint8_t buff_sucess_process_var(void)//´ó·ûÈ«²¿»÷´ò³É¹¦µÆÐ§
 {
 	#ifdef MASTER_CONTROL//Ö÷¿Ø
-		SMD_LED_Running_Water_Effect_Configuration(0, PROGRESS_BAR_1, 4, BUFF_COLOR);
-		SMD_LED_Running_Water_Effect_Configuration(1, PROGRESS_BAR_1, 4, BUFF_COLOR);
-		return SMD_LED_Running_Water_Effect_Configuration(2, PROGRESS_BAR_1, 4, BUFF_COLOR);
+		ARM_Inside_ligthting_effect(0, PROGRESS_BAR_1, 4, BUFF_COLOR);
+		ARM_Inside_ligthting_effect(1, PROGRESS_BAR_1, 4, BUFF_COLOR);
+		return ARM_Inside_ligthting_effect(2, PROGRESS_BAR_1, 4, BUFF_COLOR);
 	#endif
 	#ifdef SECONDARY_CONTROL//¸±¿Ø
-		SMD_LED_Running_Water_Effect_Configuration(0, PROGRESS_BAR_1, 4, BUFF_COLOR);
-		SMD_LED_Running_Water_Effect_Configuration(1, PROGRESS_BAR_1, 4, BUFF_COLOR);
-		return SMD_LED_Running_Water_Effect_Configuration(2, PROGRESS_BAR_1, 4, BUFF_COLOR);
+		ARM_Inside_ligthting_effect(0, PROGRESS_BAR_1, 4, BUFF_COLOR);
+		ARM_Inside_ligthting_effect(1, PROGRESS_BAR_1, 4, BUFF_COLOR);
+		return ARM_Inside_ligthting_effect(2, PROGRESS_BAR_1, 4, BUFF_COLOR);
 	#endif
 }
 
@@ -147,11 +207,12 @@ void buff_reset(void)//´ó·û³õÊ¼»¯
 	#ifdef MASTER_CONTROL//Ö÷¿Ø
 		hit[0] = 1;//¿ªÆôµÚÒ»¸ö±Û
 		secondary_finished_flag = 0;//¸±¿Ø³É¹¦´ò·ûµÆÐ§Íê³É±êÖ¾ÇåÁã
-		Unprogrammable_Light_Bar = 0;//²»¿É±à³ÌµÆÌõÇåÆÁ
 	#endif
 	arm_flash = 0;
 	arm_flashed = 0;
 	last_arm_flash = 0;
+	arm_rectangle_on = 0;
+	arm_Utype_on = 0;
 }
 
 void buff_flag_sucess(void)//´ò·û³É¹¦±êÖ¾Î»´¦Àí
@@ -173,7 +234,7 @@ void buff_new_armnum_produce(void)//ÉèÖÃÐèÒªË¢ÐÂµÄ±Û
 		do arm_flash = 0x01<<rand()%5;//Ëæ»úÉú³ÉÏÂÒ»¸öÄ¿±ê±Û±êºÅ
 		while((arm_flash&arm_flashed) != 0x00);//Ä¿±ê±ÛÒÑ¾­±»Ë¢ÐÂ¹ýÔòÖØÐÂÉú³É
 		arm_flashed |= arm_flash;//¸üÐÂÒÑ±»Ë¢ÐÂ¹ýµÄ±Û
-		Unprogrammable_Light_Bar |= arm_flash<<5;//´Ë¿ÌË¢ÐÂµÄ±Û×°¼×°åµÆÌõÁÁ
+		arm_rectangle_on |= arm_flash;//´Ë¿ÌË¢ÐÂµÄ±Û×°¼×°åµÆÌõÁÁ
 	}
 }
 #endif
@@ -182,7 +243,7 @@ void buff_flash(void)//´ó·ûË¢ÐÂº¯Êý£¬Ïß³ÌÖÐÖÜÆÚµ÷ÓÃ
 	#ifdef MASTER_CONTROL//Ö÷¿Ø
 		if(arm_flash!=0xff && hit[arm_flash])//ÕýÈ·×°¼×°å±»»÷´ò
 		{
-			Unprogrammable_Light_Bar |= arm_flash;//´Ë¿Ìarm_flash»¹Î´±»Ë¢ÐÂ£¬±»»÷´òµÄ±Û±ÛµÆÌõÁÁ
+			arm_Utype_on |= arm_flash;//´Ë¿Ìarm_flash»¹Î´±»Ë¢ÐÂ£¬±»»÷´òµÄ±Û±ÛµÆÌõÁÁ
 			buff_new_armnum_produce();//ÉèÖÃÐèÒªË¢ÐÂµÄ±Û
 			memset(hit, 0, 17);//×°¼×°å»÷´òÊý¾ÝÇåÁã
 		}

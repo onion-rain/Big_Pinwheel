@@ -14,10 +14,13 @@
 #include "Car_Driver.hpp"
 #include "Dbus_Uart.h"
 #include "My_SMDLED.h"
+#include "My_Buff.h"
 
 CAN_RxHeaderTypeDef RxHead;
-extern int16_t arm_flash, last_arm_flash, arm_flashed;
-extern uint8_t secondary_finished_flag;
+
+#ifdef MASTER_CONTROL//主控
+	extern uint8_t secondary_finished_flag;
+#endif
 
 static uint8_t data[8];//接收数据缓冲区
 
@@ -29,16 +32,40 @@ void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan)
 			secondary_finished_flag = data[1];
 	#endif
 	#ifdef SECONDARY_CONTROL
-	if(RxHead.StdId == 0x102)
-	{
-		RC_Ctl.rc.s1 = (data[0]<<8 | data[1])/10;
-		RC_Ctl.rc.s2 = (data[0]<<8 | data[1])%10;
-		arm_flash = data[2]<<8 | data[3];
-		last_arm_flash = data[4]<<8 | data[5];
-		arm_flashed = data[6]<<8 | data[7];
-	}
-	else
-		manager::CANUpdate(hcan,&RxHead,data);
+		if(RxHead.StdId == 0x100)
+		{
+			RC_Ctl.rc.s1 = (data[0]<<8 | data[1])/10;
+			RC_Ctl.rc.s2 = (data[0]<<8 | data[1])%10;
+			arm_flash = data[2];
+			last_arm_flash = data[3];
+			arm_flashed = data[5];
+		}
+	//	else
+	//		manager::CANUpdate(hcan,&RxHead,data);
+	#endif
+	#ifdef THIRD_CONTROL
+	if(RxHead.StdId == 0x100)
+		{
+			RC_Ctl.rc.s1 = (data[0]<<8 | data[1])/10;
+			RC_Ctl.rc.s2 = (data[0]<<8 | data[1])%10;
+			arm_flash = data[2];
+			last_arm_flash = data[3];
+			arm_flashed = data[5];
+			arm_Utype_on = data[6];
+			arm_rectangle_on = data[7];
+		}
+	#endif
+	#ifdef FOURTH_CONTROL
+		if(RxHead.StdId == 0x100)
+		{
+			RC_Ctl.rc.s1 = (data[0]<<8 | data[1])/10;
+			RC_Ctl.rc.s2 = (data[0]<<8 | data[1])%10;
+			arm_flash = data[2];
+			last_arm_flash = data[3];
+			arm_flashed = data[5];
+			arm_Utype_on = data[6];
+			arm_rectangle_on = data[7];
+		}
 	#endif
 }
 
