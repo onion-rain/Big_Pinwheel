@@ -342,7 +342,7 @@ void Remote_Handle(void)
 		can_buffer[0] = RC_Ctl.rc.s1*10+RC_Ctl.rc.s2;
 		can_buffer[1] = arm_flash<<8 | last_arm_flash;
 		can_buffer[2] = arm_flashed;
-		can_buffer[3] = arm_rectangle_on | arm_Utype_on;
+		can_buffer[3] = arm_rectangle_on<<8 | arm_Utype_on;
 		can_send_msg(&hcan1, 0x100, can_buffer);//给副控们发信息
 	#endif
 }

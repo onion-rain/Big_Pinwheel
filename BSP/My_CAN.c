@@ -51,8 +51,8 @@ void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan)
 			arm_flash = data[2];
 			last_arm_flash = data[3];
 			arm_flashed = data[5];
-			arm_Utype_on = data[6];
-			arm_rectangle_on = data[7];
+			arm_rectangle_on = data[6];
+			arm_Utype_on = data[7];
 		}
 	#endif
 	#ifdef FOURTH_CONTROL
@@ -63,8 +63,8 @@ void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan)
 			arm_flash = data[2];
 			last_arm_flash = data[3];
 			arm_flashed = data[5];
-			arm_Utype_on = data[6];
-			arm_rectangle_on = data[7];
+			arm_rectangle_on = data[6];
+			arm_Utype_on = data[7];
 		}
 	#endif
 }

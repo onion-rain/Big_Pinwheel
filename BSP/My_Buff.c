@@ -199,6 +199,17 @@ uint8_t buff_sucess_process_var(void)//大符全部击打成功灯效
 		ARM_Inside_ligthting_effect(1, PROGRESS_BAR_1, 4, BUFF_COLOR);
 		return ARM_Inside_ligthting_effect(2, PROGRESS_BAR_1, 4, BUFF_COLOR);
 	#endif
+	#ifdef THIRD_CONTROL//副控
+		ARM_Outside_ligthting_effect(0, SUCCESS, BUFF_COLOR);
+		ARM_Outside_ligthting_effect(1, SUCCESS, BUFF_COLOR);
+		ARM_Outside_ligthting_effect(2, SUCCESS, BUFF_COLOR);
+	#endif
+	#ifdef FOURTH_CONTROL//副控
+		ARM_Outside_ligthting_effect(0, SUCCESS, BUFF_COLOR);
+		ARM_Outside_ligthting_effect(1, SUCCESS, BUFF_COLOR);
+		ARM_Outside_ligthting_effect(2, SUCCESS, BUFF_COLOR);
+	#endif
+	
 }
 
 void buff_reset(void)//大符初始化
@@ -262,10 +273,11 @@ void buff_flash(void)//大符刷新函数，线程中周期调用
 				can_send_msg(&hcan1, 0x201, can_buffer);//给主控发信息
 			}
 		#endif
-		#ifdef MASTER_CONTROL//主控
-			if(buff_sucess_process_var() == 0)//主控进度条完成，等待副控完成
-				if(secondary_finished_flag == 1)//副控进度条完成，大符初始化
-					buff_reset();
+		#ifdef THIRD_CONTROL//副控
+			buff_sucess_process_var();
+		#endif
+		#ifdef FOURTH_CONTROL//副控
+			buff_sucess_process_var();
 		#endif
 	}else
 	{

@@ -18,7 +18,7 @@
 #define ARM_PER_BOARD 3//每个主控最大控制臂个数
 #define ROW_PER_ARM 5//单臂列数
 #define RGB_PER_ROW 64//单列RGB数
-#define ARM_UTYPE_LENGTH 100//大符臂外围灯条长度
+#define ARM_UTYPE_LENGTH 132//大符臂外围灯条长度
 #define ARM_RECTANGLE_LENGTH 123//矩形框灯条长度
 
 uint8_t Arm_Outside_LED_Data[ARM_PER_BOARD][1][ARM_UTYPE_LENGTH+ARM_RECTANGLE_LENGTH][3] = {0xff};//Arm_Outside_LED_Data[风车臂序号][单臂RGB数/2][单RGB LED数]
@@ -284,9 +284,10 @@ void ARM_Outside_ligthting_effect(uint8_t arm, uint8_t mode, uint8_t color)
 			memset(Arm_Outside_LED_Data[arm], 0xff, sizeof(Arm_Outside_LED_Data[arm]));//全部置一
 			break;
 		case SUCCESS://大符激活成功，流水效果
-			memset(Arm_Outside_LED_Data[arm][0], 0xff, RGB_success_schedule[arm]*3);
-			if(RGB_success_schedule[arm] < ARM_UTYPE_LENGTH+ARM_RECTANGLE_LENGTH)
-				RGB_success_schedule[arm]++;//累加
+			memset(Arm_Outside_LED_Data[arm], 0xff, sizeof(Arm_Outside_LED_Data[arm]));//全部置一
+//			memset(Arm_Outside_LED_Data[arm][0], 0xff, RGB_success_schedule[arm]*3);
+//			if(RGB_success_schedule[arm] < ARM_UTYPE_LENGTH+ARM_RECTANGLE_LENGTH)
+//				RGB_success_schedule[arm]++;//累加
 			break;
 	}
 	//将颜色信息添加入Arm_Outside_LED_Data
