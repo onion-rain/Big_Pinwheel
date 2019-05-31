@@ -31,7 +31,7 @@ uint8_t arm_flashed = 0x00;//已刷新过的臂
 uint8_t arm_rectangle_on = 0x00;//[0-4]，每一位代表一个臂外部灯阵，1代表当前矩阵灯阵需要全亮，0表示保持现状
 uint8_t arm_Utype_on = 0x00;//[6-10]，每一位代表一个臂外部U型灯阵，1代表当前U型灯阵需要全亮，0表示保持现状
 
-TickType_t LastShootTick;
+TickType_t LastShootTick[17];
 
 #ifdef SECONDARY_CONTROL//副控
 	uint8_t flag_secondary = 0;//副控专属，首次进入打符成功灯效模式标志
@@ -46,38 +46,38 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)//装甲板受到打击回调函数
 	switch(GPIO_Pin)
 	{
 		case GPIO_PIN_6:
-			if(HAL_GetTick()-LastShootTick > 100)
+			if(HAL_GetTick()-LastShootTick[0x10] > 100)
 			{
 				hit[0x10]++;
-				LastShootTick = HAL_GetTick();
+				LastShootTick[0x10] = HAL_GetTick();
 			}
 			break;
 		case GPIO_PIN_15:
-			if(HAL_GetTick()-LastShootTick > 100)
+			if(HAL_GetTick()-LastShootTick[0x08] > 100)
 			{
 				hit[0x08]++;
-				LastShootTick = HAL_GetTick();
+				LastShootTick[0x08] = HAL_GetTick();
 			}
 			break;
 		case GPIO_PIN_14:
-			if(HAL_GetTick()-LastShootTick > 100)
+			if(HAL_GetTick()-LastShootTick[0x04] > 100)
 			{
 				hit[0x04]++;
-				LastShootTick = HAL_GetTick();
+				LastShootTick[0x04] = HAL_GetTick();
 			}
 			break;
 		case GPIO_PIN_13:
-			if(HAL_GetTick()-LastShootTick > 100)
+			if(HAL_GetTick()-LastShootTick[0x02] > 100)
 			{
 				hit[0x02]++;
-				LastShootTick = HAL_GetTick();
+				LastShootTick[0x02] = HAL_GetTick();
 			}
 			break;
 		case GPIO_PIN_12:
-			if(HAL_GetTick()-LastShootTick > 100)
+			if(HAL_GetTick()-LastShootTick[0x01] > 100)
 			{
 				hit[0x01]++;
-				LastShootTick = HAL_GetTick();
+				LastShootTick[0x01] = HAL_GetTick();
 			}
 			break;
 	}
@@ -154,7 +154,7 @@ void buff_conveyer_belt(void)//大符灯效
 		else if(!((arm_rectangle_on>>4)&0x01) && !((arm_Utype_on>>4)&0x01))//全灭
 			ARM_Outside_ligthting_effect(1, UNSETLECTED, BUFF_COLOR);
 		else if(!((arm_rectangle_on>>4)&0x01) && ((arm_Utype_on>>4)&0x01))//U型灯阵亮，不应存在该情况，仅debug用
-			ARM_Inside_ligthting_effect(1, CONVEYER_BELT, BUFF_COLOR);
+			ARM_Inside_ligthting_effect(1, CONVEYER_BELT, 3, BUFF_COLOR);
 			
 		if((arm_rectangle_on>>5)&0x01 && (arm_Utype_on>>5)&0x01)//全亮
 			ARM_Outside_ligthting_effect(2, HITTED, BUFF_COLOR);
@@ -163,7 +163,7 @@ void buff_conveyer_belt(void)//大符灯效
 		else if(!((arm_rectangle_on>>5)&0x01) && !((arm_Utype_on>>5)&0x01))//全灭
 			ARM_Outside_ligthting_effect(2, UNSETLECTED, BUFF_COLOR);
 		else if(!((arm_rectangle_on>>5)&0x01) && ((arm_Utype_on>>5)&0x01))//U型灯阵亮，不应存在该情况，仅debug用
-			return_data = ARM_Inside_ligthting_effect(2, CONVEYER_BELT, BUFF_COLOR);
+			return_data = ARM_Inside_ligthting_effect(2, CONVEYER_BELT, 3, BUFF_COLOR);
 	#endif
 }
 

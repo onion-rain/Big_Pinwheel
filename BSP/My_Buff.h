@@ -19,7 +19,7 @@ extern uint8_t arm_flash, last_arm_flash, arm_flashed, arm_rectangle_on, arm_Uty
 	extern uint8_t hit[17];//记录五个装甲板的打击次数
 	extern uint16_t Unprogrammable_Light_Bar;
 #endif
-extern TickType_t LastShootTick;
+extern TickType_t LastShootTick[];
 
 extern void clear_with_purity_color(uint8_t color);
 extern void buff_conveyer_belt(void);

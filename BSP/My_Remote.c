@@ -209,11 +209,11 @@ static void run(uint8_t type)
 			hit[0] = 1;//开启第一个臂
 			break;
 		case RUNNING:
-			if(HAL_GetTick()-LastShootTick>2500 && last_arm_flash!=0x00)//打符失败
+			if(HAL_GetTick()-LastShootTick[arm_flash]>2500 && last_arm_flash!=0x00)//打符失败
 			{
 				RC_Ctl.rc.s1 = 0;//假装遥控器拨到安全来重启大符
 				RC_Ctl.rc.s2 = 0;
-				LastShootTick = HAL_GetTick();
+				LastShootTick[arm_flash] = HAL_GetTick();
 			}else
 				if(HAL_GetTick()%80 == 0)
 					buff_flash();//大符刷新
