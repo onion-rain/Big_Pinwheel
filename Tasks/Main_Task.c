@@ -26,7 +26,7 @@ void MainTask(void const * argument)
 	{
 		TimerTicks = xTaskGetTickCount();//获得当前系统心跳
 		Remote_Handle();//遥控器句柄
-		osDelay(2);
+		osDelay(1);
 	}
 }
 

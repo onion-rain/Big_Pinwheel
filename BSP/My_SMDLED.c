@@ -18,13 +18,13 @@
 #define ARM_PER_BOARD 3//每个主控最大控制臂个数
 #define ROW_PER_ARM 5//单臂列数
 #define RGB_PER_ROW 64//单列RGB数
-#define ARM_UTYPE_LENGTH 132//大符臂外围灯条长度
+#define ARM_UTYPE_LENGTH 162//大符臂外围灯条长度
 #define ARM_RECTANGLE_LENGTH 123//矩形框灯条长度
 
 uint8_t Arm_Outside_LED_Data[ARM_PER_BOARD][1][ARM_UTYPE_LENGTH+ARM_RECTANGLE_LENGTH][3] = {0xff};//Arm_Outside_LED_Data[风车臂序号][单臂RGB数/2][单RGB LED数]
-uint8_t Outside_row_index[ARM_PER_BOARD] = {0};//5个臂各自的列指针(0)
-uint8_t Outside_RGB_index[ARM_PER_BOARD] = {0};//5个臂各自的RGB指针(0~RGB_PER_ROW-1)
-uint8_t Outside_LED_index[ARM_PER_BOARD] = {0};//5个臂各自的LED指针(0~2)
+uint8_t Outside_row_index[ARM_PER_BOARD] = {0};//5个臂各自的列指针(0~4)
+uint16_t Outside_RGB_index[ARM_PER_BOARD] = {0};//5个臂各自的RGB指针(0)
+uint8_t Outside_LED_index[ARM_PER_BOARD] = {0};//5个臂各自的LED指针(0~ARM_UTYPE_LENGTH+ARM_RECTANGLE_LENGTH-1)
 uint8_t Outside_bit_index[ARM_PER_BOARD] = {1};//5个臂各自的数据位指针(0-7),第0个信号在SMD_LED_Color_Set中设置，中断中从第二个信号开始处理
 uint8_t Arm_Inside_LED_Data[ARM_PER_BOARD][ROW_PER_ARM][RGB_PER_ROW][3] = {0xff};//Arm_Inside_LED_Data[风车臂序号][单臂RGB列数][单臂单列RGB数][单RGB LED数]
 uint8_t Inside_row_index[ARM_PER_BOARD] = {0};//5个臂各自的列指针(0~4)
@@ -292,7 +292,7 @@ void ARM_Outside_ligthting_effect(uint8_t arm, uint8_t mode, uint8_t color)
 	}
 	//将颜色信息添加入Arm_Outside_LED_Data
 	uint8_t color_set = 0;
-	for(uint8_t led=0; led<ARM_UTYPE_LENGTH+ARM_RECTANGLE_LENGTH; led++)
+	for(uint16_t led=0; led<ARM_UTYPE_LENGTH+ARM_RECTANGLE_LENGTH; led++)
 	{
 		switch(color & 0xf8)
 		{
@@ -429,46 +429,4 @@ void SMD_OUTSIDE_LED_IT(void)//外部灯条中断处理函数
 		}
 	}
 }
-//void SMD_OUTSIDE_LED_IT(void)//外部灯条中断处理函数
-//{
-//	for(uint8_t arm=0; arm<ARM_PER_BOARD; arm++)
-//	{
-//		if(Arm_Outside_LED_Data[arm][Outside_RGB_index[arm]][Outside_LED_index[arm]] == 0xff)
-//			switch(arm)
-//			{
-//				case 0:ARM0_PULSE = LOGIC_ONE_PULSE;break;
-//				case 1:ARM1_PULSE = LOGIC_ONE_PULSE;break;
-//				case 2:ARM2_PULSE = LOGIC_ONE_PULSE;break;
-//			}
-//		else
-//			switch(arm)
-//			{
-//				case 0:ARM0_PULSE = LOGIC_ZERO_PULSE;break;
-//				case 1:ARM1_PULSE = LOGIC_ZERO_PULSE;break;
-//				case 2:ARM2_PULSE = LOGIC_ZERO_PULSE;break;
-//			}
-//		Outside_bit_index[arm]++;
-//		if(Outside_bit_index[arm] == 8)//一个LED的8位数据遍历完
-//		{
-//			Outside_bit_index[arm] = 0;//数据位指针归零
-//			Outside_LED_index[arm]++;//下一个LED
-//			if(Outside_LED_index[arm] == 3)
-//			{
-//				Outside_LED_index[arm] = 0;//LED指针清零
-//				Outside_RGB_index[arm]++;//下一个RGB
-//				if(Outside_RGB_index[arm] == ARM_UTYPE_LENGTH+ARM_RECTANGLE_LENGTH)
-//				{
-//					if(!((arm+1)<ARM_PER_BOARD))//不满足下次循环表示是需要遍历的最后一个灯臂
-//					{
-//						__HAL_TIM_DISABLE_IT(ARM_TIM,TIM_IT_UPDATE);//关中断
-//						ARM0_PULSE = 0;
-//						ARM1_PULSE = 0;
-//						ARM2_PULSE = 0;
-//					}
-//					Outside_bit_index[arm] = 1;//当遍历完一个臂上所有RGB的所有LED的所有位，下次进中断设置的应是第二个LED的占空比，故此处为1
-//				}
-//			}
-//		}
-//	}
-//}
 
