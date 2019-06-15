@@ -18,9 +18,10 @@
 #define GREEN 0x01
 #define RED 0x02
 #define BLUE 0x04
-#define RAND 0x08
-#define GRADATION 0x10
-#define RUNNING_WATER 0x18
+#define ORANGE 0x08
+#define RAND 0x10
+#define GRADATION 0x20
+#define RUNNING_WATER 0x30
 
 //大符臂流水灯阵灯效
 #define ALL_ON 0x00

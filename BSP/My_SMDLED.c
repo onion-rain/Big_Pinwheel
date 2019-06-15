@@ -195,6 +195,7 @@ static uint8_t Tetris(uint8_t arm, uint8_t parameter)
 	*         @arg GREEN: 纯色绿色
 	*         @arg RED: 	纯色红色
 	*         @arg BLUE:  纯色蓝色(纯色间可用|自由搭配)
+	*         @arg ARANGE:橙色
 	*         @arg RAND:	随机色
 	*         @arg RUNNING_WATER:	流水灯效
 	* @details	周期调用该函数以达到流水效果
@@ -235,19 +236,26 @@ uint8_t ARM_Inside_ligthting_effect(uint8_t arm, uint8_t mode, uint8_t parameter
 	for(uint8_t row=0; row<ROW_PER_ARM; row++)
 		for(uint8_t led=0; led<RGB_PER_ROW; led++)
 		{
-			switch(color & 0xf8)
+			switch(color & 0xf0)
 			{
 				case 0:color_set = color;break;
 				case RAND:color_set = rand()%6+1;break;
 				case GRADATION:break;
 				case RUNNING_WATER:break;
 			}
-			if(!(color_set & GREEN))
-				Arm_Inside_LED_Data[arm][row][led][0] = 0x00;
-			if(!(color_set & RED))
-				Arm_Inside_LED_Data[arm][row][led][1] = 0x00;
-			if(!(color_set & BLUE))
+			if(color_set == ORANGE)
+			{
+				Arm_Inside_LED_Data[arm][row][led][0] = 0x7f;//绿50%
 				Arm_Inside_LED_Data[arm][row][led][2] = 0x00;
+			}else
+			{
+				if(!(color_set & GREEN))
+					Arm_Inside_LED_Data[arm][row][led][0] = 0x00;
+				if(!(color_set & RED))
+					Arm_Inside_LED_Data[arm][row][led][1] = 0x00;
+				if(!(color_set & BLUE))
+					Arm_Inside_LED_Data[arm][row][led][2] = 0x00;
+			}
 		}
 	return return_data;
 }
@@ -264,6 +272,7 @@ uint8_t ARM_Inside_ligthting_effect(uint8_t arm, uint8_t mode, uint8_t parameter
 	*         @arg GREEN: 纯色绿色
 	*         @arg RED: 	纯色红色
 	*         @arg BLUE:  纯色蓝色(纯色间可用|自由搭配)
+	*         @arg ARANGE:橙色
 	*         @arg RAND:	随机色
 	*         @arg RUNNING_WATER:	流水灯效
 	* @details	周期调用该函数以达到流水效果
@@ -294,19 +303,27 @@ void ARM_Outside_ligthting_effect(uint8_t arm, uint8_t mode, uint8_t color)
 	uint8_t color_set = 0;
 	for(uint16_t led=0; led<ARM_UTYPE_LENGTH+ARM_RECTANGLE_LENGTH; led++)
 	{
-		switch(color & 0xf8)
+		switch(color & 0xf0)
 		{
 			case 0:color_set = color;break;
 			case RAND:color_set = rand()%6+1;break;
 			case GRADATION:break;
 			case RUNNING_WATER:break;
 		}
-		if(!(color_set & GREEN))
-			Arm_Outside_LED_Data[arm][0][led][0] = 0x00;
-		if(!(color_set & RED))
-			Arm_Outside_LED_Data[arm][0][led][1] = 0x00;
-		if(!(color_set & BLUE))
-			Arm_Outside_LED_Data[arm][0][led][2] = 0x00;
+		
+		if(color_set == ORANGE)
+		{
+			Arm_Inside_LED_Data[arm][0][led][0] = 0x7f;//绿50%
+			Arm_Inside_LED_Data[arm][0][led][2] = 0x00;
+		}else
+		{
+			if(!(color_set & GREEN))
+				Arm_Outside_LED_Data[arm][0][led][0] = 0x00;
+			if(!(color_set & RED))
+				Arm_Outside_LED_Data[arm][0][led][1] = 0x00;
+			if(!(color_set & BLUE))
+				Arm_Outside_LED_Data[arm][0][led][2] = 0x00;
+		}
 	}
 }
 /** @brief  初始化pwm

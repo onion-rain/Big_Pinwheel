@@ -38,8 +38,8 @@
 */
 //#define MASTER_CONTROL
 //#define SECONDARY_CONTROL
-//#define THIRD_CONTROL
-#define FOURTH_CONTROL
+#define THIRD_CONTROL
+//#define FOU RTH_CONTROL
 /** 
   * @brief pwm定时器通道定义
   * @refer My_Car.cpp
