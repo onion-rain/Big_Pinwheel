@@ -23,6 +23,8 @@
 #define RUNNING		1//<运行时参数
 #define ENDING		2//<结束时参数
 
+static int8_t cycle = 100;//进入安全模式的时间
+
 static uint8_t remote_mode=0;
 static uint8_t last_mode= 0xFF; //上一次遥控器的值，用于对比切换模式
 
@@ -200,6 +202,23 @@ static void Tetris(uint8_t type)
 			break;
 	}
 }
+/** 
+    * @brief 安全模式
+*/
+static void safe_mode(uint8_t type)
+{
+	switch(type)
+	{
+		case STARTING:
+			clear_with_purity_color(0);
+			SMD_LED_PWM_Init();
+			break;
+		case RUNNING:
+			break;
+		case ENDING:
+			break;
+	}
+}
 #ifdef MASTER_CONTROL//主控
 static void run(uint8_t type)
 {
@@ -213,6 +232,7 @@ static void run(uint8_t type)
 			{
 				RC_Ctl.rc.s1 = 0;//假装遥控器拨到安全来重启大符
 				RC_Ctl.rc.s2 = 0;
+				safe_mode(STARTING);
 //				LastShootTick[arm_flash] = HAL_GetTick();
 			}else
 				if(HAL_GetTick()%80 == 0)
@@ -284,23 +304,6 @@ static void run(uint8_t type)
 }
 #endif
 /** 
-    * @brief 安全模式
-*/
-static void safe_mode(uint8_t type)
-{
-	switch(type)
-	{
-		case STARTING:
-			clear_with_purity_color(0);
-			SMD_LED_PWM_Init();
-			break;
-		case RUNNING:
-			break;
-		case ENDING:
-			break;
-	}
-}
-/** 
 * @brief  遥控器mode分发
 * @param [in]  mode 遥控器s1*10+s2
 * @param [in]  type 运行参数
@@ -337,7 +340,6 @@ void Remote_Handle(void)
 		last_mode = remote_mode;
 	}
 	Remote_Distribute(remote_mode,RUNNING);      //持续当前模式
-	
 	#ifdef MASTER_CONTROL
 		can_buffer[0] = RC_Ctl.rc.s1*10+RC_Ctl.rc.s2;
 		can_buffer[1] = arm_flash<<8 | last_arm_flash;
