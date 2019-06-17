@@ -252,16 +252,21 @@ void buff_new_armnum_produce(void)//设置需要刷新的臂
 #endif
 void buff_flash(void)//大符刷新函数，线程中周期调用
 {
-	#ifdef MASTER_CONTROL//主控
-		if(arm_flash!=0xff && hit[arm_flash])//正确装甲板被击打
-		{
-			arm_Utype_on |= arm_flash;//此刻arm_flash还未被刷新，被击打的臂臂灯条亮
-			buff_new_armnum_produce();//设置需要刷新的臂
-			memset(hit, 0, 17);//装甲板击打数据清零
-		}
-	#endif
+#ifdef MASTER_CONTROL//主控
+	if(arm_flash!=0xff && hit[arm_flash])//正确装甲板被击打
+	{
+		arm_Utype_on |= arm_flash;//此刻arm_flash还未被刷新，被击打的臂臂灯条亮
+		buff_new_armnum_produce();//设置需要刷新的臂
+		memset(hit, 0, 17);//装甲板击打数据清零
+	}
+#endif
 	if(arm_flashed == 0xff && arm_flash == 0xff && last_arm_flash == 0xff)//打符成功
 	{
+		#ifdef MASTER_CONTROL
+		if(buff_sucess_process_var() == 0)//主控进度条完成，等待副控完成
+			if(secondary_finished_flag == 1)//副控进度条完成，大符初始化
+				buff_reset();
+		#endif
 		#ifdef SECONDARY_CONTROL//副控
 			if(flag_secondary == 0)//判断是否为首次进行成功打符灯效判断是否要进行index清零,准备成功打符灯效
 				memset(RGB_Start_index, 0x00, sizeof(RGB_Start_index));

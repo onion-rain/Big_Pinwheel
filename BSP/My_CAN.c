@@ -40,8 +40,6 @@ void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan)
 			last_arm_flash = data[3];
 			arm_flashed = data[5];
 		}
-	//	else
-	//		manager::CANUpdate(hcan,&RxHead,data);
 	#endif
 	#ifdef THIRD_CONTROL
 	if(RxHead.StdId == 0x100)
