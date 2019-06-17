@@ -41,46 +41,51 @@ TickType_t LastShootTick[17];
 #ifdef MASTER_CONTROL//主控
 	uint8_t hit[17] = {0};//记录五个装甲板的打击次数
 	uint8_t secondary_finished_flag = 0;//副控完成打符成功灯效标志，1为已完成，在can回调函数中更新
+	int16_t exti_time = 0;//剩余允许装甲板检测打击时间，防止误触
 
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)//装甲板受到打击回调函数
 {
-	switch(GPIO_Pin)
+	if(exti_time == 0)
 	{
-		case GPIO_PIN_6:
-			if(HAL_GetTick()-LastShootTick[0x10] > 100)
-			{
-				hit[0x10]++;
-				LastShootTick[0x10] = HAL_GetTick();
-			}
-			break;
-		case GPIO_PIN_15:
-			if(HAL_GetTick()-LastShootTick[0x08] > 100)
-			{
-				hit[0x08]++;
-				LastShootTick[0x08] = HAL_GetTick();
-			}
-			break;
-		case GPIO_PIN_14:
-			if(HAL_GetTick()-LastShootTick[0x04] > 100)
-			{
-				hit[0x04]++;
-				LastShootTick[0x04] = HAL_GetTick();
-			}
-			break;
-		case GPIO_PIN_13:
-			if(HAL_GetTick()-LastShootTick[0x02] > 100)
-			{
-				hit[0x02]++;
-				LastShootTick[0x02] = HAL_GetTick();
-			}
-			break;
-		case GPIO_PIN_12:
-			if(HAL_GetTick()-LastShootTick[0x01] > 100)
-			{
-				hit[0x01]++;
-				LastShootTick[0x01] = HAL_GetTick();
-			}
-			break;
+		exti_time = 3;
+		switch(GPIO_Pin)
+		{
+			case GPIO_PIN_6:
+				if(HAL_GetTick()-LastShootTick[0x10] > 100)
+				{
+					hit[0x10]++;
+					LastShootTick[0x10] = HAL_GetTick();
+				}
+				break;
+			case GPIO_PIN_15:
+				if(HAL_GetTick()-LastShootTick[0x08] > 100)
+				{
+					hit[0x08]++;
+					LastShootTick[0x08] = HAL_GetTick();
+				}
+				break;
+			case GPIO_PIN_14:
+				if(HAL_GetTick()-LastShootTick[0x04] > 100)
+				{
+					hit[0x04]++;
+					LastShootTick[0x04] = HAL_GetTick();
+				}
+				break;
+			case GPIO_PIN_13:
+				if(HAL_GetTick()-LastShootTick[0x02] > 100)
+				{
+					hit[0x02]++;
+					LastShootTick[0x02] = HAL_GetTick();
+				}
+				break;
+			case GPIO_PIN_12:
+				if(HAL_GetTick()-LastShootTick[0x01] > 100)
+				{
+					hit[0x01]++;
+					LastShootTick[0x01] = HAL_GetTick();
+				}
+				break;
+		}
 	}
 }
 #endif
@@ -253,6 +258,8 @@ void buff_new_armnum_produce(void)//设置需要刷新的臂
 void buff_flash(void)//大符刷新函数，线程中周期调用
 {
 #ifdef MASTER_CONTROL//主控
+	exti_time--;//装甲板检测倒计时
+	if(exti_time<0)exti_time = 0;
 	if(arm_flash!=0xff && hit[arm_flash])//正确装甲板被击打
 	{
 		arm_Utype_on |= arm_flash;//此刻arm_flash还未被刷新，被击打的臂臂灯条亮
