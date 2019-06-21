@@ -201,7 +201,7 @@ static uint8_t Tetris(uint8_t arm, uint8_t parameter)
 	* @details	周期调用该函数以达到流水效果
 	* @retval 不同mode含义不同
 	*/
-uint8_t ARM_Inside_ligthting_effect(uint8_t arm, uint8_t mode, uint8_t parameter, uint8_t color)
+uint8_t ARM_Inside_ligthting_effect(uint8_t arm, uint8_t mode, uint8_t parameter, uint32_t color)
 {
 	uint8_t return_data;
 	//将每个RGB的亮灭配置信息放入Arm_Inside_LED_Data
@@ -232,29 +232,23 @@ uint8_t ARM_Inside_ligthting_effect(uint8_t arm, uint8_t mode, uint8_t parameter
 			break;
 	}
 	//将颜色信息添加入Arm_Inside_LED_Data
-	uint8_t color_set = 0;
+	uint32_t color_set = 0;
 	for(uint8_t row=0; row<ROW_PER_ARM; row++)
 		for(uint8_t led=0; led<RGB_PER_ROW; led++)
 		{
-			switch(color & 0xf0)
+			switch(color & 0xf0000000)
 			{
 				case 0:color_set = color;break;
-				case RAND:color_set = rand()%6+1;break;
+				case RAND:color_set = rand()%0xffffff;break;
 				case GRADATION:break;
 				case RUNNING_WATER:break;
 			}
-			if(color_set == ORANGE)
+			
+			if(Arm_Inside_LED_Data[arm][row][led][0] == 0xff)//亮
 			{
-				Arm_Inside_LED_Data[arm][row][led][0] = 0x7f;//绿50%
-				Arm_Inside_LED_Data[arm][row][led][2] = 0x00;
-			}else
-			{
-				if(!(color_set & GREEN))
-					Arm_Inside_LED_Data[arm][row][led][0] = 0x00;
-				if(!(color_set & RED))
-					Arm_Inside_LED_Data[arm][row][led][1] = 0x00;
-				if(!(color_set & BLUE))
-					Arm_Inside_LED_Data[arm][row][led][2] = 0x00;
+				Arm_Inside_LED_Data[arm][row][led][0] = (uint8_t)((color_set&GREEN) >> 8);
+				Arm_Inside_LED_Data[arm][row][led][1] = (uint8_t)((color_set&RED) >> 16);
+				Arm_Inside_LED_Data[arm][row][led][2] = (uint8_t)(color_set&BLUE);
 			}
 		}
 	return return_data;
@@ -278,7 +272,7 @@ uint8_t ARM_Inside_ligthting_effect(uint8_t arm, uint8_t mode, uint8_t parameter
 	* @details	周期调用该函数以达到流水效果
 	* @retval 不同mode含义不同
 	*/
-void ARM_Outside_ligthting_effect(uint8_t arm, uint8_t mode, uint8_t color)
+void ARM_Outside_ligthting_effect(uint8_t arm, uint8_t mode, uint32_t color)
 {
 	//将每个RGB的亮灭配置信息放入Arm_Inside_LED_Data
 	memset(Arm_Outside_LED_Data[arm], 0x00, sizeof(Arm_Outside_LED_Data[arm]));//全部清零
@@ -300,29 +294,22 @@ void ARM_Outside_ligthting_effect(uint8_t arm, uint8_t mode, uint8_t color)
 			break;
 	}
 	//将颜色信息添加入Arm_Outside_LED_Data
-	uint8_t color_set = 0;
+	uint32_t color_set = 0;
 	for(uint16_t led=0; led<ARM_UTYPE_LENGTH+ARM_RECTANGLE_LENGTH; led++)
 	{
-		switch(color & 0xf0)
+		switch(color & 0xf0000000)
 		{
 			case 0:color_set = color;break;
-			case RAND:color_set = rand()%6+1;break;
+			case RAND:color_set = rand()%0xffffff;break;
 			case GRADATION:break;
 			case RUNNING_WATER:break;
 		}
 		
-		if(color_set == ORANGE)
+		if(Arm_Outside_LED_Data[arm][0][led][0] == 0xff)//亮
 		{
-			Arm_Inside_LED_Data[arm][0][led][0] = 0x7f;//绿50%
-			Arm_Inside_LED_Data[arm][0][led][2] = 0x00;
-		}else
-		{
-			if(!(color_set & GREEN))
-				Arm_Outside_LED_Data[arm][0][led][0] = 0x00;
-			if(!(color_set & RED))
-				Arm_Outside_LED_Data[arm][0][led][1] = 0x00;
-			if(!(color_set & BLUE))
-				Arm_Outside_LED_Data[arm][0][led][2] = 0x00;
+			Arm_Outside_LED_Data[arm][0][led][0] = (uint8_t)((color_set&GREEN) >> 8);
+			Arm_Outside_LED_Data[arm][0][led][1] = (uint8_t)((color_set&RED) >> 16);
+			Arm_Outside_LED_Data[arm][0][led][2] = (uint8_t)(color_set&BLUE);
 		}
 	}
 }
@@ -332,17 +319,17 @@ void ARM_Outside_ligthting_effect(uint8_t arm, uint8_t mode, uint8_t color)
 void SMD_LED_PWM_Init(void)
 {
 	//设置各臂第一列第一个RGB中的绿色LED pwm脉冲占空比，
-	if(Arm_Inside_LED_Data[0][0][Inside_LED_index[0]/3][Inside_LED_index[0]%3] == 0xff)
+	if(Arm_Inside_LED_Data[0][0][Inside_LED_index[0]/3][Inside_LED_index[0]%3] & 0x80)
 		ARM0_PULSE = LOGIC_ONE_PULSE;
 	else
 		ARM0_PULSE = LOGIC_ZERO_PULSE;
 
-	if(Arm_Inside_LED_Data[1][0][Inside_LED_index[1]/3][Inside_LED_index[1]%3] == 0xff)
+	if(Arm_Inside_LED_Data[1][0][Inside_LED_index[1]/3][Inside_LED_index[1]%3] & 0x80)
 		ARM1_PULSE = LOGIC_ONE_PULSE;
 	else
 		ARM1_PULSE = LOGIC_ZERO_PULSE;
 
-	if(Arm_Inside_LED_Data[2][0][Inside_LED_index[2]/3][Inside_LED_index[2]%3] == 0xff)
+	if(Arm_Inside_LED_Data[2][0][Inside_LED_index[2]/3][Inside_LED_index[2]%3] & 0x80)
 		ARM2_PULSE = LOGIC_ONE_PULSE;
 	else
 		ARM2_PULSE = LOGIC_ZERO_PULSE;
@@ -354,7 +341,7 @@ void SMD_INSIDE_LED_IT(void)//内部灯阵中断处理函数
 {
 	for(uint8_t i=0; i<ARM_PER_BOARD; i++)
 	{
-		if(Arm_Inside_LED_Data[i][Inside_row_index[i]][Inside_RGB_index[i]][Inside_LED_index[i]] == 0xff)
+		if(Arm_Inside_LED_Data[i][Inside_row_index[i]][Inside_RGB_index[i]][Inside_LED_index[i]]<<Outside_bit_index[i] & 0x80)
 			switch(i)
 			{
 				case 0:ARM0_PULSE = LOGIC_ONE_PULSE;break;
@@ -402,7 +389,7 @@ void SMD_OUTSIDE_LED_IT(void)//外部灯条中断处理函数
 {
 	for(uint8_t i=0; i<ARM_PER_BOARD; i++)
 	{
-		if(Arm_Outside_LED_Data[i][Outside_row_index[i]][Outside_RGB_index[i]][Outside_LED_index[i]] == 0xff)
+		if(Arm_Outside_LED_Data[i][Outside_row_index[i]][Outside_RGB_index[i]][Outside_LED_index[i]]<<Outside_bit_index[i] & 0x80)
 			switch(i)
 			{
 				case 0:ARM0_PULSE = LOGIC_ONE_PULSE;break;

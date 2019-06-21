@@ -15,13 +15,15 @@
 #include "tim.h"
 #include "define_all.h"
 
-#define GREEN 0x01
-#define RED 0x02
-#define BLUE 0x04
-#define ORANGE 0x08
-#define RAND 0x10
-#define GRADATION 0x20
-#define RUNNING_WATER 0x30
+#define RED 0x00ff0000//纯色高八位为0
+#define GREEN 0x0000ff00
+#define BLUE 0x000000ff
+#define ORANGE 0xff8f00
+#define CYAN 0x00ffff
+
+#define RAND 0x10000000
+#define GRADATION 0x20000000
+#define RUNNING_WATER 0x30000000
 
 //大符臂流水灯阵灯效
 #define ALL_ON 0x00
@@ -38,8 +40,8 @@
 #define HITTED 0x02
 #define SUCCESS 0x03
 
-uint8_t ARM_Inside_ligthting_effect(uint8_t arm, uint8_t mode, uint8_t parameter, uint8_t color);
-void ARM_Outside_ligthting_effect(uint8_t arm, uint8_t mode, uint8_t color);
+uint8_t ARM_Inside_ligthting_effect(uint8_t arm, uint8_t mode, uint8_t parameter, uint32_t color);
+void ARM_Outside_ligthting_effect(uint8_t arm, uint8_t mode, uint32_t color);
 void SMD_INSIDE_LED_IT(void);
 void SMD_OUTSIDE_LED_IT(void);
 void SMD_LED_PWM_Init(void);
