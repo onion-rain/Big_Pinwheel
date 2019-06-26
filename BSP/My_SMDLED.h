@@ -20,6 +20,8 @@
 #define BLUE 0x000000ff
 #define ORANGE 0xff8f00
 #define CYAN 0x00ffff
+#define ORANGE_x 0x7F2000
+#define CYAN_x 0x006043
 
 #define RAND 0x10000000
 #define GRADATION 0x20000000
