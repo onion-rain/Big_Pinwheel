@@ -341,7 +341,7 @@ void SMD_INSIDE_LED_IT(void)//内部灯阵中断处理函数
 {
 	for(uint8_t i=0; i<ARM_PER_BOARD; i++)
 	{
-		if(Arm_Inside_LED_Data[i][Inside_row_index[i]][Inside_RGB_index[i]][Inside_LED_index[i]]<<Outside_bit_index[i] & 0x80)
+		if(Arm_Inside_LED_Data[i][Inside_row_index[i]][Inside_RGB_index[i]][Inside_LED_index[i]]<<Inside_bit_index[i] & 0x80)
 			switch(i)
 			{
 				case 0:ARM0_PULSE = LOGIC_ONE_PULSE;break;
