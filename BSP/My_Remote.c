@@ -220,6 +220,14 @@ static void safe_mode(uint8_t type)
 	}
 }
 #ifdef MASTER_CONTROL//主控
+static uint8_t check_wrong_hit(void)
+{
+	for(uint8_t i=0x01; !(i&0x20); i<<=1)
+		if(i != arm_flash)//不是正确装甲板
+			if(hit[i])
+				return 1;
+	return 0;
+}
 static void run(uint8_t type)
 {
 	switch(type)
@@ -228,12 +236,22 @@ static void run(uint8_t type)
 			hit[0] = 1;//开启第一个臂
 			break;
 		case RUNNING:
-			if(HAL_GetTick()-LastShootTick[last_arm_flash]>2500 && last_arm_flash!=0x00/*第一次不刷新*/ && last_arm_flash!=0xff/*打符成功*/)//打符失败
+			if(HAL_GetTick()-LastShootTick[last_arm_flash]>2500 /*&& last_arm_flash!=0x00第一次不刷新*/ && last_arm_flash!=0xff/*打符成功*/)//打符失败
 			{
 				RC_Ctl.rc.s1 = 0;//假装遥控器拨到安全来重启大符
 				RC_Ctl.rc.s2 = 0;
 				safe_mode(STARTING);
-//				LastShootTick[arm_flash] = HAL_GetTick();
+				for(uint8_t i=0; i<17; i++)
+					LastShootTick[i] = HAL_GetTick();
+			}else 
+			if(arm_flash!=0xff && check_wrong_hit())//错误装甲板被击打，打符失败
+			{
+				RC_Ctl.rc.s1 = 0;//假装遥控器拨到安全来重启大符
+				RC_Ctl.rc.s2 = 0;
+				memset(hit, 0, 17);
+				safe_mode(STARTING);
+				for(uint8_t i=0; i<17; i++)
+					LastShootTick[i] = HAL_GetTick();
 			}else
 				if(HAL_GetTick()%80 == 0)
 					buff_flash();//大符刷新

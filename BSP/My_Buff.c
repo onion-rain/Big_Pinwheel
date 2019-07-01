@@ -17,7 +17,7 @@
 #include "Global_Variable.h"
 #include <stdlib.h>
 
-#define BUFF_COLOR ORANGE_x//RED//CYAN_x//
+#define BUFF_COLOR RED//BLUE//ORANGE_x//CYAN_x//
 
 extern int8_t RGB_Start_index[5][5];//声明于My_SMDLED.c，切换模式时清零防止不同模式间干扰
 extern uint8_t RGB_Tail_num[5][5];//声明于My_SMDLED.c，切换模式时清零防止不同模式间干扰
@@ -46,7 +46,7 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)//装甲板受到打击回调函数
 {
 	if(exti_time == 0)
 	{
-		exti_time = 3;
+		exti_time = 0;//误检测阈值
 		switch(GPIO_Pin)
 		{
 			case GPIO_PIN_6:
