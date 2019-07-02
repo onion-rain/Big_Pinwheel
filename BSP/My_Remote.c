@@ -252,7 +252,7 @@ static void run(uint8_t type)
 				safe_mode(STARTING);
 				for(uint8_t i=0; i<17; i++)
 					LastShootTick[i] = HAL_GetTick();
-			}else
+			}else//正确装甲板被击打
 				if(HAL_GetTick()%80 == 0)
 					buff_flash();//大符刷新
 			break;

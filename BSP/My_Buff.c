@@ -46,7 +46,7 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)//装甲板受到打击回调函数
 {
 	if(exti_time == 0)
 	{
-		exti_time = 0;//误检测阈值
+		exti_time = 4;//误检测阈值
 		switch(GPIO_Pin)
 		{
 			case GPIO_PIN_6:
